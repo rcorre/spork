@@ -15,15 +15,6 @@ func TestRoomTestSuite(t *testing.T) {
 	suite.Run(t, new(RoomTestSuite))
 }
 
-type RESTClientMock struct {
-	mock.Mock
-}
-
-func (m *RESTClientMock) Get(path string, params map[string]string, out interface{}) error {
-	args := m.Called(path, params, out)
-	return args.Error(0)
-}
-
 func (suite *RoomTestSuite) TestList() {
 	restClient := &RESTClientMock{}
 	restClient.On(
