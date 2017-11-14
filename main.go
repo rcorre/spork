@@ -42,8 +42,12 @@ func layout(g *gocui.Gui) error {
 		if err != nil {
 			panic(err)
 		}
-		for _, room := range rooms {
-			fmt.Fprintln(v, room.Title)
+		messages, err := s.Messages.List(rooms[0].ID)
+		if err != nil {
+			panic(err)
+		}
+		for _, msg := range messages {
+			fmt.Fprintln(v, msg.Text)
 		}
 	}
 	return nil
