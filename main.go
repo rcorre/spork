@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/jroimartin/gocui"
+	"github.com/rcorre/spork/spark"
 )
 
 func main() {
@@ -31,7 +33,15 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprintln(v, "Hello world!")
+		token := os.Getenv("SPARK_TOKEN")
+		s := spark.New("", token)
+		rooms, err := s.Rooms.List()
+		if err != nil {
+			panic(err)
+		}
+		for _, room := range rooms {
+			fmt.Fprintln(v, room.Title)
+		}
 	}
 	return nil
 }
