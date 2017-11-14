@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -53,7 +54,12 @@ func (c *restClient) do(req *http.Request, out interface{}) error {
 		return c.err("Request %+v had an error response: %+v", req, resp)
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Printf("Error closing response body: %v")
+		}
+	}()
+
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return c.err("Request %+v could not read body from %+v: %v", req, resp, err)
