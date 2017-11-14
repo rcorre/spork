@@ -33,7 +33,10 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		token := os.Getenv("SPARK_TOKEN")
+		token, ok := os.LookupEnv("SPARK_TOKEN")
+		if !ok {
+			return fmt.Errorf("SPARK_TOKEN must be set")
+		}
 		s := spark.New("", token)
 		rooms, err := s.Rooms.List()
 		if err != nil {
