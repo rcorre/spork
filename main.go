@@ -46,8 +46,27 @@ func layout(g *gocui.Gui) error {
 		if err != nil {
 			panic(err)
 		}
+		ids := map[string]bool{}
 		for _, msg := range messages {
-			fmt.Fprintln(v, msg.Text)
+			ids[msg.PersonID] = true
+		}
+		idList := []string{}
+		for id, _ := range ids {
+			idList = append(idList, id)
+		}
+		people, err := s.People.List(idList)
+		if err != nil {
+			panic(err)
+		}
+		for _, msg := range messages {
+			var name string
+			for _, person := range people {
+				if person.ID == msg.PersonID {
+					name = person.DisplayName
+					break
+				}
+			}
+			fmt.Fprintf(v, "%s: %s\n", name, msg.Text)
 		}
 	}
 	return nil
