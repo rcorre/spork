@@ -18,6 +18,10 @@ type roomService struct {
 	rest RESTClient
 }
 
+func NewRoomService(rest RESTClient) RoomService {
+	return &roomService{rest: rest}
+}
+
 func (svc *roomService) List() ([]Room, error) {
 	var list struct {
 		Items []Room
