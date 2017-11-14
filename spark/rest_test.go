@@ -70,6 +70,7 @@ func (suite *RESTTestSuite) TestGet() {
 		"http://example.com/resource/path")
 	test(map[string]string{"foo": "bar"},
 		"http://example.com/resource/path?foo=bar")
+	// TODO: test in a way that is independent of map order
 	test(map[string]string{"foo": "bar", "biz": "baz"},
 		"http://example.com/resource/path?biz=baz&foo=bar")
 }
