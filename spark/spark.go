@@ -5,6 +5,7 @@ const defaultURL = "https://api.ciscospark.com/v1/"
 type Client struct {
 	Rooms    RoomService
 	Messages MessageService
+	People   PeopleService
 }
 
 func New(url, token string) *Client {
@@ -17,5 +18,6 @@ func New(url, token string) *Client {
 	return &Client{
 		Rooms:    &roomService{rest: rest},
 		Messages: &messageService{rest: rest},
+		People:   &peopleService{rest: rest},
 	}
 }
