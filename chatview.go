@@ -29,9 +29,10 @@ func NewChatView(g *gocui.Gui) (ChatView, error) {
 
 func (v *chatView) Render(messages []Message) error {
 	w := new(tabwriter.Writer)
+	v.chatPane.Clear()
 	w.Init(v.chatPane, 8, 8, 1, ' ', 0)
 	for _, m := range messages {
-		fmt.Fprintf(w, "%s\t| %s\n", m.Sender, m.Text)
+		fmt.Fprintf(w, "%s\t| %s\t| %s\n", m.Time, m.Sender, m.Text)
 	}
 	return w.Flush()
 }

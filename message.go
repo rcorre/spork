@@ -1,12 +1,32 @@
 package main
 
 import (
+	"log"
+	"sort"
+	"time"
+
 	"github.com/rcorre/spork/spark"
 )
 
 type Message struct {
 	Text   string
 	Sender string
+	Time   time.Time
+}
+
+// messageList implements sort.Interface to sort messages by time
+type messageList []Message
+
+func (m messageList) Len() int {
+	return len(m)
+}
+
+func (m messageList) Less(i, j int) bool {
+	return m[i].Time.Before(m[j].Time)
+}
+
+func (m messageList) Swap(i, j int) {
+	m[i], m[j] = m[j], m[i]
 }
 
 func LoadMessages(api *spark.Client, roomID string) ([]Message, error) {
@@ -28,7 +48,7 @@ func LoadMessages(api *spark.Client, roomID string) ([]Message, error) {
 		return nil, err
 	}
 
-	out := make([]Message, len(messages))
+	out := make(messageList, len(messages))
 	for i, msg := range messages {
 		var name string
 		for _, person := range people {
@@ -37,11 +57,20 @@ func LoadMessages(api *spark.Client, roomID string) ([]Message, error) {
 				break
 			}
 		}
+
+		time, err := time.Parse(time.RFC3339Nano, msg.Created)
+		if err != nil {
+			log.Printf("Failed to parse %s: %v", msg.Created, err)
+			continue
+		}
 		out[i] = Message{
 			Text:   msg.Text,
 			Sender: name,
+			Time:   time,
 		}
 	}
+
+	sort.Sort(out)
 
 	return out, nil
 }

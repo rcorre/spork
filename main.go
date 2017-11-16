@@ -46,8 +46,7 @@ func layout(g *gocui.Gui) error {
 	if err != nil {
 		return err
 	}
-	chatView.Render(messages)
-	return nil
+	return chatView.Render(messages)
 }
 
 func quit(g *gocui.Gui, v *gocui.View) error {
