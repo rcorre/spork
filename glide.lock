@@ -1,12 +1,16 @@
-hash: fdf4544238974b68cac8e27dc2493aa070a1f542b70caa2d39544678d3bfc7ba
-updated: 2017-11-13T20:14:36.974570541-05:00
+hash: 9365203ea788c8ccb01ef46c7bd9d6e315f43dd46fb1692eeea699febbb8ec27
+updated: 2017-11-16T17:20:37.271296431-05:00
 imports:
+- name: github.com/gorilla/websocket
+  version: ea4d1f681babbce9545c9c5f3d5194a789c89f5b
 - name: github.com/jroimartin/gocui
   version: 4f518eddb04b8f73870836b6d1941e8aa3c06637
 - name: github.com/mattn/go-runewidth
-  version: 14207d285c6c197daabb5c9793d63e7af9ab2d50
+  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
 - name: github.com/nsf/termbox-go
   version: aa4a75b1c20a2b03751b1a9f7e41d58bd6f71c43
+- name: github.com/satori/go.uuid
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/stretchr/testify
   version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:

@@ -10,6 +10,28 @@ import (
 )
 
 func main() {
+	s, err := getSpark()
+	if err != nil {
+		panic(err)
+	}
+	e := s.Events
+	if err := e.Register(); err != nil {
+		panic(err)
+	}
+	defer func() {
+		if err := e.UnRegister(); err != nil {
+			log.Printf("Failed to unregister websocket: %v", err)
+		} else {
+			log.Printf("Device unregistered")
+		}
+	}()
+	if err := e.Listen(); err != nil {
+		panic(err)
+	}
+	// runUI()
+}
+
+func runUI() {
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		log.Panicln(err)
@@ -27,12 +49,20 @@ func main() {
 	}
 }
 
-func layout(g *gocui.Gui) error {
+func getSpark() (*spark.Client, error) {
 	token, ok := os.LookupEnv("SPARK_TOKEN")
 	if !ok {
-		return fmt.Errorf("SPARK_TOKEN must be set")
+		return nil, fmt.Errorf("SPARK_TOKEN must be set")
 	}
-	s := spark.New("", token)
+	return spark.New("", token), nil
+}
+
+func layout(g *gocui.Gui) error {
+	s, err := getSpark()
+	if err != nil {
+		return err
+	}
+
 	rooms, err := s.Rooms.List()
 	if err != nil {
 		panic(err)
