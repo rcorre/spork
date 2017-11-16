@@ -4,12 +4,18 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 
 	"github.com/jroimartin/gocui"
 	"github.com/rcorre/spork/spark"
 )
 
 func main() {
+	// runUI()
+	listen()
+}
+
+func listen() {
 	s, err := getSpark()
 	if err != nil {
 		panic(err)
@@ -25,10 +31,24 @@ func main() {
 			log.Printf("Device unregistered")
 		}
 	}()
-	if err := e.Listen(); err != nil {
+	msgChan, errChan, err := e.Listen()
+	if err != nil {
 		panic(err)
 	}
-	// runUI()
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+
+	for {
+		select {
+		case msg := <-msgChan:
+			log.Printf("msg: %s", msg)
+		case err := <-errChan:
+			log.Printf("err: %v", err)
+		case <-interrupt:
+			return
+		}
+	}
 }
 
 func runUI() {

@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"time"
 
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
@@ -21,7 +18,7 @@ type EventListener interface {
 	Devices() (interface{}, error)
 	Register() error
 	UnRegister() error
-	Listen() error
+	Listen() (chan string, chan error, error)
 }
 
 type eventListener struct {
@@ -83,66 +80,48 @@ func (e *eventListener) UnRegister() error {
 	return err
 }
 
-func (e *eventListener) Listen() error {
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
-
+func (e *eventListener) Listen() (chan string, chan error, error) {
 	log.Printf("connecting to %s", e.socketURL)
 
 	c, _, err := websocket.DefaultDialer.Dial(e.socketURL, nil)
 	if err != nil {
-		log.Fatal("dial:", err)
+		return nil, nil, fmt.Errorf("Failed to dial websocket: %v", err)
 	}
-	defer c.Close()
 
-	done := make(chan struct{})
-
-	authMsg := []byte(fmt.Sprintf(`{
-		"id": %q,
-		"type": "authorization",
-		"data": {
-			"token": "Bearer %s"
-		}
-	}`, uuid.NewV4(), e.token))
-
-	log.Printf("%s", authMsg)
-
-	if err = c.WriteMessage(websocket.TextMessage, authMsg); err != nil {
-		return err
-	}
+	msgChan := make(chan string)
+	errChan := make(chan error)
 
 	go func() {
 		defer c.Close()
-		defer close(done)
+		defer close(msgChan)
+		defer close(errChan)
+
+		log.Printf("Websocket auth...")
+
+		authMsg := []byte(fmt.Sprintf(`{
+			"id": %q,
+			"type": "authorization",
+			"data": {
+				"token": "Bearer %s"
+			}
+		}`, uuid.NewV4(), e.token))
+
+		if err = c.WriteMessage(websocket.TextMessage, authMsg); err != nil {
+			errChan <- err
+			return
+		}
+
+		log.Printf("Websocket auth complete")
+
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
-				log.Println("read:", err)
+				errChan <- err
 				return
 			}
-			log.Printf("recv: %s", message)
+			msgChan <- string(message)
 		}
 	}()
 
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-interrupt:
-			log.Println("interrupt")
-			// To cleanly close a connection, a client should send a close
-			// frame and wait for the server to close the connection.
-			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			if err != nil {
-				log.Println("write close:", err)
-				return err
-			}
-			select {
-			case <-done:
-			case <-time.After(time.Second):
-			}
-			return c.Close()
-		}
-	}
+	return msgChan, errChan, nil
 }
