@@ -1,5 +1,7 @@
 package spark
 
+import "time"
+
 type RoomService interface {
 	List() ([]Room, error)
 }
@@ -10,8 +12,8 @@ type Room struct {
 	Type         string
 	IsLocked     bool
 	TeamId       string
-	LastActivity string
-	Created      string
+	LastActivity time.Time
+	Created      time.Time
 }
 
 type roomService struct {

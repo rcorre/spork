@@ -1,6 +1,9 @@
 package spark
 
-import "strings"
+import (
+	"strings"
+	"time"
+)
 
 type PeopleService interface {
 	List(ids []string) ([]Person, error)
@@ -18,7 +21,7 @@ type Person struct {
 	Licenses      []string
 	Created       string
 	Timezone      string
-	LastActivity  string
+	LastActivity  time.Time
 	Status        string
 	InvitePending bool
 	LoginEnabled  bool

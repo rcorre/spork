@@ -1,5 +1,7 @@
 package spark
 
+import "time"
+
 type MessageService interface {
 	List(roomID string) ([]Message, error)
 }
@@ -15,7 +17,7 @@ type Message struct {
 	Files           []string
 	PersonID        string
 	PersonEmail     string
-	Created         string
+	Created         time.Time
 	MentionedPeople []string
 }
 

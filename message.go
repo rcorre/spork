@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"sort"
 	"time"
 
@@ -58,15 +57,10 @@ func LoadMessages(api *spark.Client, roomID string) ([]Message, error) {
 			}
 		}
 
-		time, err := time.Parse(time.RFC3339Nano, msg.Created)
-		if err != nil {
-			log.Printf("Failed to parse %s: %v", msg.Created, err)
-			continue
-		}
 		out[i] = Message{
 			Text:   msg.Text,
 			Sender: name,
-			Time:   time,
+			Time:   msg.Created,
 		}
 	}
 
