@@ -1,6 +1,7 @@
 package spark
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +18,8 @@ type HTTPClient interface {
 
 type RESTClient interface {
 	Get(url string, params map[string]string, out interface{}) error
+	Delete(url string, params map[string]string, out interface{}) error
+	Post(url string, body interface{}, out interface{}) error
 }
 
 type restClient struct {
@@ -45,6 +48,7 @@ func (c *restClient) err(format string, args ...interface{}) error {
 
 // do performs a request forms an error message with the spark token masked
 func (c *restClient) do(req *http.Request, out interface{}) error {
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.token)
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -84,6 +88,38 @@ func (c *restClient) Get(path string, params map[string]string, out interface{})
 	url.RawQuery = query.Encode()
 
 	req, err := http.NewRequest("GET", url.String(), nil)
+	if err != nil {
+		return err
+	}
+	return c.do(req, out)
+}
+
+func (c *restClient) Delete(path string, params map[string]string, out interface{}) error {
+	query := url.Values{}
+	for k, v := range params {
+		query.Set(k, v)
+	}
+
+	url, err := url.Parse(c.url + path)
+	if err != nil {
+		return err
+	}
+	url.RawQuery = query.Encode()
+
+	req, err := http.NewRequest("DELETE", url.String(), nil)
+	if err != nil {
+		return err
+	}
+	return c.do(req, out)
+}
+
+func (c *restClient) Post(path string, body interface{}, out interface{}) error {
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", c.url+path, bytes.NewReader(jsonBody))
 	if err != nil {
 		return err
 	}

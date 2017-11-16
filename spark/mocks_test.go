@@ -12,3 +12,13 @@ func (m *RESTClientMock) Get(path string, params map[string]string, out interfac
 	args := m.Called(path, params, out)
 	return args.Error(0)
 }
+
+func (m *RESTClientMock) Delete(path string, params map[string]string, out interface{}) error {
+	args := m.Called(path, params, out)
+	return args.Error(0)
+}
+
+func (m *RESTClientMock) Post(path string, in interface{}, out interface{}) error {
+	args := m.Called(path, in, out)
+	return args.Error(0)
+}
