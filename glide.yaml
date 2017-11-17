@@ -1,4 +1,7 @@
 package: github.com/rcorre/spork
+owners:
+  - name: Ryan Roden-Corrent
+    email: ryan@rcorre.net
 import:
 - package: github.com/jroimartin/gocui
 - package: github.com/gorilla/websocket
