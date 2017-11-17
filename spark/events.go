@@ -1,6 +1,7 @@
 package spark
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,7 +19,7 @@ type EventListener interface {
 	Devices() (interface{}, error)
 	Register() error
 	UnRegister() error
-	Listen() (chan string, chan error, error)
+	Listen() (chan Event, chan error, error)
 }
 
 type eventListener struct {
@@ -80,7 +81,26 @@ func (e *eventListener) UnRegister() error {
 	return err
 }
 
-func (e *eventListener) Listen() (chan string, chan error, error) {
+type Event struct {
+	ID   string
+	Data struct {
+		EventType string
+		Activity  struct {
+			Verb  string
+			Actor struct {
+				ID           string
+				ObjectType   string
+				DisplayName  string
+				OrgId        string
+				EmailAddress string
+				EntryUUID    string
+				Type         string
+			}
+		}
+	}
+}
+
+func (e *eventListener) Listen() (chan Event, chan error, error) {
 	log.Printf("connecting to %s", e.socketURL)
 
 	c, _, err := websocket.DefaultDialer.Dial(e.socketURL, nil)
@@ -88,12 +108,12 @@ func (e *eventListener) Listen() (chan string, chan error, error) {
 		return nil, nil, fmt.Errorf("Failed to dial websocket: %v", err)
 	}
 
-	msgChan := make(chan string)
+	evChan := make(chan Event)
 	errChan := make(chan error)
 
 	go func() {
 		defer c.Close()
-		defer close(msgChan)
+		defer close(evChan)
 		defer close(errChan)
 
 		log.Printf("Websocket auth...")
@@ -119,9 +139,14 @@ func (e *eventListener) Listen() (chan string, chan error, error) {
 				errChan <- err
 				return
 			}
-			msgChan <- string(message)
+			var ev Event
+			if err := json.Unmarshal(message, &ev); err != nil {
+				errChan <- err
+			} else {
+				evChan <- ev
+			}
 		}
 	}()
 
-	return msgChan, errChan, nil
+	return evChan, errChan, nil
 }
