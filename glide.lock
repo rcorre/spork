@@ -1,5 +1,5 @@
-hash: 3d36c4c2db8d057eb6f24e2d2b558b0c81112d97f7311d83db37ace9810eed85
-updated: 2017-11-17T09:01:16.561468802-05:00
+hash: 6a364f4983748ac0e5870fdaaf55202fb9a820af18605968c170510ec02bea7a
+updated: 2017-11-17T09:08:50.497709542-05:00
 imports:
 - name: github.com/gorilla/websocket
   version: ea4d1f681babbce9545c9c5f3d5194a789c89f5b
@@ -9,6 +9,8 @@ imports:
   version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
 - name: github.com/nsf/termbox-go
   version: aa4a75b1c20a2b03751b1a9f7e41d58bd6f71c43
+- name: github.com/romana/rlog
+  version: f018bc92e7d71f27c04e04cbf008860416c21d01
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 testImports:

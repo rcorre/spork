@@ -8,6 +8,7 @@ import (
 
 	"github.com/jroimartin/gocui"
 	"github.com/rcorre/spork/spark"
+	"github.com/romana/rlog"
 )
 
 func main() {
@@ -26,9 +27,9 @@ func listen() {
 	}
 	defer func() {
 		if err := e.UnRegister(); err != nil {
-			log.Printf("Failed to unregister websocket: %v", err)
+			rlog.Errorf("Failed to unregister websocket: %v", err)
 		} else {
-			log.Printf("Device unregistered")
+			rlog.Info("Device unregistered")
 		}
 	}()
 	msgChan, errChan, err := e.Listen()
@@ -42,9 +43,9 @@ func listen() {
 	for {
 		select {
 		case msg := <-msgChan:
-			log.Printf("msg: %s", msg)
+			rlog.Infof("msg: %s", msg)
 		case err := <-errChan:
-			log.Printf("err: %v", err)
+			rlog.Errorf("err: %v", err)
 		case <-interrupt:
 			return
 		}

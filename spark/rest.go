@@ -6,10 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/romana/rlog"
 )
 
 type HTTPClient interface {
@@ -60,7 +61,7 @@ func (c *restClient) do(req *http.Request, out interface{}) error {
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			log.Printf("Error closing response body: %v")
+			rlog.Info("Error closing response body: %v")
 		}
 	}()
 

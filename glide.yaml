@@ -1,13 +1,14 @@
 package: github.com/rcorre/spork
 owners:
-  - name: Ryan Roden-Corrent
-    email: ryan@rcorre.net
+- name: Ryan Roden-Corrent
+  email: ryan@rcorre.net
 import:
 - package: github.com/jroimartin/gocui
 - package: github.com/gorilla/websocket
   version: ^1.2.0
 - package: github.com/satori/go.uuid
   version: ^1.1.0
+- package: github.com/romana/rlog
 testImport:
 - package: github.com/stretchr/testify
   version: ^1.1.4

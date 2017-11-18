@@ -3,10 +3,10 @@ package spark
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/romana/rlog"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -101,7 +101,11 @@ type Event struct {
 }
 
 func (e *eventListener) Listen() (chan Event, chan error, error) {
-	log.Printf("connecting to %s", e.socketURL)
+	rlog.Infof("connecting to %s", e.socketURL)
+
+	if e.socketURL == "" {
+		return nil, nil, fmt.Errorf("Cannot Listen() before Register()")
+	}
 
 	c, _, err := websocket.DefaultDialer.Dial(e.socketURL, nil)
 	if err != nil {
@@ -116,7 +120,7 @@ func (e *eventListener) Listen() (chan Event, chan error, error) {
 		defer close(evChan)
 		defer close(errChan)
 
-		log.Printf("Websocket auth...")
+		rlog.Debug("Seding auth to websocket...")
 
 		authMsg := []byte(fmt.Sprintf(`{
 			"id": %q,
@@ -131,10 +135,12 @@ func (e *eventListener) Listen() (chan Event, chan error, error) {
 			return
 		}
 
-		log.Printf("Websocket auth complete")
+		rlog.Debug("Websocket auth successful!")
 
 		for {
 			_, message, err := c.ReadMessage()
+			rlog.Debugf("Websocket recv msg: %s, err: %v", message, err)
+
 			if err != nil {
 				errChan <- err
 				return
