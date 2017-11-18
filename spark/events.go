@@ -12,6 +12,16 @@ import (
 
 const socketURL = "https://wdm-a.wbx2.com/wdm/api/v1/devices"
 
+type dialer interface {
+	Dial(urlStr string, requestHeader http.Header) (connection, *http.Response, error)
+}
+
+type connection interface {
+	ReadMessage() (messageType int, p []byte, err error)
+	WriteMessage(messageType int, data []byte) error
+	Close() error
+}
+
 // Cisco Spark has a websocket interface to listen for message events
 // It isn't documented, I found it here:
 // https://github.com/marchfederico/ciscospark-websocket-events
@@ -27,12 +37,23 @@ type eventListener struct {
 	token     string
 	deviceURL string
 	socketURL string
+	conn      connection
+	connect   func(url string) (connection, error)
 }
 
 func NewEventListener(token string) EventListener {
 	return &eventListener{
 		token: token,
 		rest:  NewRESTClient(socketURL, token),
+		connect: func(url string) (connection, error) {
+			rlog.Debugf("connecting to %s", url)
+
+			c, _, err := websocket.DefaultDialer.Dial(url, nil)
+			if err != nil {
+				return nil, err
+			}
+			return connection(c), nil
+		},
 	}
 }
 
@@ -107,7 +128,7 @@ func (e *eventListener) Listen() (chan Event, chan error, error) {
 		return nil, nil, fmt.Errorf("Cannot Listen() before Register()")
 	}
 
-	c, _, err := websocket.DefaultDialer.Dial(e.socketURL, nil)
+	c, err := e.connect(e.socketURL)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to dial websocket: %v", err)
 	}
