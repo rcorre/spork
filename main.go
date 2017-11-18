@@ -12,8 +12,8 @@ import (
 )
 
 func main() {
-	// runUI()
-	listen()
+	runUI()
+	//listen()
 }
 
 func listen() {
@@ -59,9 +59,27 @@ func runUI() {
 	}
 	defer g.Close()
 
-	g.SetManagerFunc(layout)
+	s, err := getSpark()
+	if err != nil {
+		panic(err)
+	}
+
+	controller, err := NewChatController(s, NewChatView())
+	if err != nil {
+		panic(err)
+	}
+
+	g.SetManager(controller)
 
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
+		log.Panicln(err)
+	}
+
+	if err := g.SetKeybinding("", 'j', gocui.ModNone, controller.NextRoom); err != nil {
+		log.Panicln(err)
+	}
+
+	if err := g.SetKeybinding("", 'k', gocui.ModNone, controller.PrevRoom); err != nil {
 		log.Panicln(err)
 	}
 
@@ -76,28 +94,6 @@ func getSpark() (*spark.Client, error) {
 		return nil, fmt.Errorf("SPARK_TOKEN must be set")
 	}
 	return spark.New("", token), nil
-}
-
-func layout(g *gocui.Gui) error {
-	s, err := getSpark()
-	if err != nil {
-		return err
-	}
-
-	rooms, err := s.Rooms.List()
-	if err != nil {
-		panic(err)
-	}
-	messages, err := LoadMessages(s, rooms[0].ID)
-	if err != nil {
-		return err
-	}
-
-	chatView, err := NewChatView(g)
-	if err != nil {
-		return err
-	}
-	return chatView.Render(messages)
 }
 
 func quit(g *gocui.Gui, v *gocui.View) error {
