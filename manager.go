@@ -10,13 +10,14 @@ const (
 	CycleBackard = -1
 )
 
-type ChatController interface {
+// Manager is the gocui.Manager for spork
+type Manager interface {
 	NextRoom(g *gocui.Gui, _ *gocui.View) error
 	PrevRoom(g *gocui.Gui, _ *gocui.View) error
 	Layout(g *gocui.Gui) error
 }
 
-type chatController struct {
+type manager struct {
 	spark   *spark.Client
 	view    ChatView
 	roomIdx int
@@ -24,7 +25,7 @@ type chatController struct {
 	people  PersonCache
 }
 
-func NewChatController(s *spark.Client, v ChatView) (ChatController, error) {
+func NewManager(s *spark.Client, v ChatView) (Manager, error) {
 	roomList, err := s.Rooms.List()
 	if err != nil {
 		return nil, err
@@ -37,7 +38,7 @@ func NewChatController(s *spark.Client, v ChatView) (ChatController, error) {
 		rooms[i] = NewRoom(&r, s.Messages, people)
 	}
 
-	return &chatController{
+	return &manager{
 		spark:  s,
 		view:   v,
 		rooms:  rooms,
@@ -45,31 +46,31 @@ func NewChatController(s *spark.Client, v ChatView) (ChatController, error) {
 	}, nil
 }
 
-func (c *chatController) NextRoom(g *gocui.Gui, _ *gocui.View) error {
-	return c.cycleRoom(g, 1)
+func (m *manager) NextRoom(g *gocui.Gui, _ *gocui.View) error {
+	return m.cycleRoom(g, 1)
 }
 
-func (c *chatController) PrevRoom(g *gocui.Gui, _ *gocui.View) error {
-	return c.cycleRoom(g, 1)
+func (m *manager) PrevRoom(g *gocui.Gui, _ *gocui.View) error {
+	return m.cycleRoom(g, 1)
 }
 
-func (c *chatController) cycleRoom(g *gocui.Gui, direction int) error {
-	c.roomIdx = (c.roomIdx + direction%len(c.rooms))
-	room := c.rooms[c.roomIdx]
+func (m *manager) cycleRoom(g *gocui.Gui, direction int) error {
+	m.roomIdx = (m.roomIdx + direction%len(m.rooms))
+	room := m.rooms[m.roomIdx]
 	if err := room.Load(); err != nil {
 		return err
 	}
 
 	g.Update(func(g *gocui.Gui) error {
-		return c.view.Render(g, room.Messages())
+		return m.view.Render(g, room.Messages())
 	})
 	return nil
 }
 
-func (c *chatController) Layout(g *gocui.Gui) error {
+func (m *manager) Layout(g *gocui.Gui) error {
 	g.Update(func(g *gocui.Gui) error {
-		room := c.rooms[c.roomIdx]
-		return c.view.Render(g, room.Messages())
+		room := m.rooms[m.roomIdx]
+		return m.view.Render(g, room.Messages())
 	})
 	return nil
 }
