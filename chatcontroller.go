@@ -20,19 +20,28 @@ type chatController struct {
 	spark   *spark.Client
 	view    ChatView
 	roomIdx int
-	rooms   []spark.Room
+	rooms   []Room
+	people  PersonCache
 }
 
 func NewChatController(s *spark.Client, v ChatView) (ChatController, error) {
-	rooms, err := s.Rooms.List()
+	roomList, err := s.Rooms.List()
 	if err != nil {
 		return nil, err
 	}
 
+	people := NewPersonCache(s.People)
+
+	rooms := make([]Room, len(roomList))
+	for i, r := range roomList {
+		rooms[i] = NewRoom(&r, s.Messages, people)
+	}
+
 	return &chatController{
-		spark: s,
-		view:  v,
-		rooms: rooms,
+		spark:  s,
+		view:   v,
+		rooms:  rooms,
+		people: people,
 	}, nil
 }
 
@@ -47,25 +56,20 @@ func (c *chatController) PrevRoom(g *gocui.Gui, _ *gocui.View) error {
 func (c *chatController) cycleRoom(g *gocui.Gui, direction int) error {
 	c.roomIdx = (c.roomIdx + direction%len(c.rooms))
 	room := c.rooms[c.roomIdx]
-	messages, err := LoadMessages(c.spark, room.ID)
-	if err != nil {
+	if err := room.Load(); err != nil {
 		return err
 	}
 
 	g.Update(func(g *gocui.Gui) error {
-		return c.view.Render(g, messages)
+		return c.view.Render(g, room.Messages())
 	})
 	return nil
 }
 
 func (c *chatController) Layout(g *gocui.Gui) error {
-	messages, err := LoadMessages(c.spark, c.rooms[c.roomIdx].ID)
-	if err != nil {
-		return err
-	}
-
 	g.Update(func(g *gocui.Gui) error {
-		return c.view.Render(g, messages)
+		room := c.rooms[c.roomIdx]
+		return c.view.Render(g, room.Messages())
 	})
 	return nil
 }

@@ -3,8 +3,6 @@ package main
 import (
 	"sort"
 	"time"
-
-	"github.com/rcorre/spork/spark"
 )
 
 type Message struct {
@@ -13,58 +11,21 @@ type Message struct {
 	Time   time.Time
 }
 
-// messageList implements sort.Interface to sort messages by time
-type messageList []Message
+// MessageList implements sort.Interface to sort messages by time
+type MessageList []Message
 
-func (m messageList) Len() int {
+func (m MessageList) Len() int {
 	return len(m)
 }
 
-func (m messageList) Less(i, j int) bool {
+func (m MessageList) Less(i, j int) bool {
 	return m[i].Time.Before(m[j].Time)
 }
 
-func (m messageList) Swap(i, j int) {
+func (m MessageList) Swap(i, j int) {
 	m[i], m[j] = m[j], m[i]
 }
 
-func LoadMessages(api *spark.Client, roomID string) ([]Message, error) {
-	messages, err := api.Messages.List(roomID)
-	if err != nil {
-		return nil, err
-	}
-
-	ids := map[string]bool{}
-	for _, msg := range messages {
-		ids[msg.PersonID] = true
-	}
-	idList := []string{}
-	for id, _ := range ids {
-		idList = append(idList, id)
-	}
-	people, err := api.People.List(idList)
-	if err != nil {
-		return nil, err
-	}
-
-	out := make(messageList, len(messages))
-	for i, msg := range messages {
-		var name string
-		for _, person := range people {
-			if person.ID == msg.PersonID {
-				name = person.DisplayName
-				break
-			}
-		}
-
-		out[i] = Message{
-			Text:   msg.Text,
-			Sender: name,
-			Time:   msg.Created,
-		}
-	}
-
-	sort.Sort(out)
-
-	return out, nil
+func (m MessageList) Sort() {
+	sort.Sort(m)
 }
