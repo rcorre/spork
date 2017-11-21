@@ -47,11 +47,22 @@ func (c *restClient) err(format string, args ...interface{}) error {
 	return errors.New(str)
 }
 
+// dbg writes a debug log with the spark token masked
+func (c *restClient) dbg(format string, args ...interface{}) {
+	str := fmt.Sprintf(format, args...)
+	str = strings.Replace(str, c.token, "REDACTED", -1)
+	rlog.Debug(str)
+}
+
 // do performs a request forms an error message with the spark token masked
 func (c *restClient) do(req *http.Request, out interface{}) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.token)
+
+	c.dbg("Making request %+v", req)
 	resp, err := c.http.Do(req)
+	c.dbg("Got response %+v", resp)
+
 	if err != nil {
 		return c.err("Request %+v failed: %v", req, err)
 	}
@@ -69,6 +80,7 @@ func (c *restClient) do(req *http.Request, out interface{}) error {
 	if err != nil {
 		return c.err("Request %+v could not read body from %+v: %v", req, resp, err)
 	}
+	c.dbg("Got response body %s", bytes)
 
 	if err = json.Unmarshal(bytes, &out); err != nil {
 		return c.err("Could not unmarshal %s into %+v: %v", bytes, out, err)
