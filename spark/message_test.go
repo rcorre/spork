@@ -25,9 +25,9 @@ func (suite *MessageTestSuite) TestList() {
 	).Run(func(args mock.Arguments) {
 		out := args.Get(2).(*struct{ Items []Message })
 		out.Items = []Message{
-			Message{Text: "Foo"},
-			Message{Text: "Bar"},
-			Message{Text: "Baz"},
+			{Text: "Foo"},
+			{Text: "Bar"},
+			{Text: "Baz"},
 		}
 	}).Return(nil)
 	roomService := NewMessageService(restClient)
@@ -35,8 +35,8 @@ func (suite *MessageTestSuite) TestList() {
 	rooms, err := roomService.List("room-12345")
 	suite.Nil(err)
 	suite.Equal(rooms, []Message{
-		Message{Text: "Foo"},
-		Message{Text: "Bar"},
-		Message{Text: "Baz"},
+		{Text: "Foo"},
+		{Text: "Bar"},
+		{Text: "Baz"},
 	})
 }

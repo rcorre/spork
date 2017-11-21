@@ -27,9 +27,9 @@ func (suite *PeopleTestSuite) TestList() {
 	).Run(func(args mock.Arguments) {
 		out := args.Get(2).(*struct{ Items []Person })
 		out.Items = []Person{
-			Person{DisplayName: "Foo"},
-			Person{DisplayName: "Bar"},
-			Person{DisplayName: "Baz"},
+			{DisplayName: "Foo"},
+			{DisplayName: "Bar"},
+			{DisplayName: "Baz"},
 		}
 	}).Return(nil)
 	peopleService := NewPeopleService(restClient)
@@ -37,8 +37,8 @@ func (suite *PeopleTestSuite) TestList() {
 	rooms, err := peopleService.List([]string{"one", "two", "three"})
 	suite.Nil(err)
 	suite.Equal(rooms, []Person{
-		Person{DisplayName: "Foo"},
-		Person{DisplayName: "Bar"},
-		Person{DisplayName: "Baz"},
+		{DisplayName: "Foo"},
+		{DisplayName: "Bar"},
+		{DisplayName: "Baz"},
 	})
 }
