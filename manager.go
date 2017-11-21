@@ -54,7 +54,7 @@ func (m *manager) NextRoom(g *gocui.Gui, _ *gocui.View) error {
 }
 
 func (m *manager) PrevRoom(g *gocui.Gui, _ *gocui.View) error {
-	return m.cycleRoom(g, 1)
+	return m.cycleRoom(g, -1)
 }
 
 func (m *manager) cycleRoom(g *gocui.Gui, direction int) error {
