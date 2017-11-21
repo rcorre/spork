@@ -97,7 +97,7 @@ func (e *eventListener) UnRegister() error {
 	req.Header.Set("Authorization", "Bearer "+e.token)
 	resp, err := http.DefaultClient.Do(req)
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("Failed to unregister device", resp)
+		return fmt.Errorf("Failed to unregister device: %+v", resp)
 	}
 	return err
 }
