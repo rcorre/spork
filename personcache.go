@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/rcorre/spork/spark"
 )
 
@@ -39,7 +37,8 @@ func (p *personCache) Get(id string) (string, error) {
 		return name, nil
 	}
 
-	return "", fmt.Errorf("Could not find person %q", id)
+	// the message may have been sent by a removed user
+	return "???", nil
 }
 
 // Load makes a batch API request to load multiple people
