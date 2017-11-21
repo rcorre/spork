@@ -54,6 +54,15 @@ func NewManager(s *spark.Client, v ChatView) (Manager, error) {
 	}, nil
 }
 
+func (m *manager) state() *State {
+	room := m.rooms[m.roomIdx]
+	return &State{
+		Messages: room.Messages(),
+		Rooms:    m.rooms,
+		RoomIdx:  m.roomIdx,
+	}
+}
+
 func (m *manager) NextRoom(g *gocui.Gui, _ *gocui.View) error {
 	return m.cycleRoom(g, 1)
 }
@@ -64,8 +73,7 @@ func (m *manager) PrevRoom(g *gocui.Gui, _ *gocui.View) error {
 
 func (m *manager) cycleRoom(g *gocui.Gui, direction int) error {
 	m.roomIdx = (m.roomIdx + direction%len(m.rooms))
-	room := m.rooms[m.roomIdx]
-	return m.view.Render(g, room.Messages())
+	return m.view.Render(g, m.state())
 }
 
 func (m *manager) PageUp(g *gocui.Gui, _ *gocui.View) error {
@@ -87,6 +95,5 @@ func (m *manager) HalfPageDown(g *gocui.Gui, _ *gocui.View) error {
 }
 
 func (m *manager) Layout(g *gocui.Gui) error {
-	room := m.rooms[m.roomIdx]
-	return m.view.Render(g, room.Messages())
+	return m.view.Render(g, m.state())
 }
