@@ -36,6 +36,9 @@ func NewManager(s *spark.Client, v ChatView) (Manager, error) {
 	rooms := make([]Room, len(roomList))
 	for i, r := range roomList {
 		rooms[i] = NewRoom(&r, s.Messages, people)
+		if err := rooms[i].Load(); err != nil {
+			return nil, err
+		}
 	}
 
 	return &manager{
@@ -57,20 +60,10 @@ func (m *manager) PrevRoom(g *gocui.Gui, _ *gocui.View) error {
 func (m *manager) cycleRoom(g *gocui.Gui, direction int) error {
 	m.roomIdx = (m.roomIdx + direction%len(m.rooms))
 	room := m.rooms[m.roomIdx]
-	if err := room.Load(); err != nil {
-		return err
-	}
-
-	g.Update(func(g *gocui.Gui) error {
-		return m.view.Render(g, room.Messages())
-	})
-	return nil
+	return m.view.Render(g, room.Messages())
 }
 
 func (m *manager) Layout(g *gocui.Gui) error {
-	g.Update(func(g *gocui.Gui) error {
-		room := m.rooms[m.roomIdx]
-		return m.view.Render(g, room.Messages())
-	})
-	return nil
+	room := m.rooms[m.roomIdx]
+	return m.view.Render(g, room.Messages())
 }
