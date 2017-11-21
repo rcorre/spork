@@ -5,6 +5,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/jroimartin/gocui"
+	"github.com/mgutz/ansi"
 )
 
 type ChatView interface {
@@ -45,11 +46,11 @@ func (*chatView) Render(g *gocui.Gui, state *State) error {
 	} else {
 		v.Clear()
 		for i, r := range state.Rooms {
+			title := r.Title()
 			if i == state.RoomIdx {
-				fmt.Fprintf(v, "- %s\n", r.Title())
-			} else {
-				fmt.Fprintf(v, "%s\n", r.Title())
+				title = ansi.Color(r.Title(), "white+b")
 			}
+			fmt.Fprintf(v, "%s\n", title)
 		}
 	}
 
