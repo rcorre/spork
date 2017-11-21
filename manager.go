@@ -12,9 +12,14 @@ const (
 
 // Manager is the gocui.Manager for spork
 type Manager interface {
+	gocui.Manager
+
 	NextRoom(g *gocui.Gui, _ *gocui.View) error
 	PrevRoom(g *gocui.Gui, _ *gocui.View) error
-	Layout(g *gocui.Gui) error
+	PageDown(g *gocui.Gui, _ *gocui.View) error
+	PageUp(g *gocui.Gui, _ *gocui.View) error
+	HalfPageDown(g *gocui.Gui, _ *gocui.View) error
+	HalfPageUp(g *gocui.Gui, _ *gocui.View) error
 }
 
 type manager struct {
@@ -61,6 +66,24 @@ func (m *manager) cycleRoom(g *gocui.Gui, direction int) error {
 	m.roomIdx = (m.roomIdx + direction%len(m.rooms))
 	room := m.rooms[m.roomIdx]
 	return m.view.Render(g, room.Messages())
+}
+
+func (m *manager) PageUp(g *gocui.Gui, _ *gocui.View) error {
+
+	return m.view.Scroll(g, -1)
+}
+
+func (m *manager) PageDown(g *gocui.Gui, _ *gocui.View) error {
+	return m.view.Scroll(g, 1)
+}
+
+func (m *manager) HalfPageUp(g *gocui.Gui, _ *gocui.View) error {
+
+	return m.view.Scroll(g, -1.0/2.0)
+}
+
+func (m *manager) HalfPageDown(g *gocui.Gui, _ *gocui.View) error {
+	return m.view.Scroll(g, 1.0/2.0)
 }
 
 func (m *manager) Layout(g *gocui.Gui) error {

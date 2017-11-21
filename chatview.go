@@ -9,6 +9,7 @@ import (
 
 type ChatView interface {
 	Render(g *gocui.Gui, messages []Message) error
+	Scroll(g *gocui.Gui, mult float64) error
 }
 
 type chatView struct{}
@@ -31,4 +32,20 @@ func (*chatView) Render(g *gocui.Gui, messages []Message) error {
 		fmt.Fprintf(w, "%s\t| %s\t| %s\n", m.Time, m.Sender, m.Text)
 	}
 	return w.Flush()
+}
+
+func (*chatView) Scroll(g *gocui.Gui, mult float64) error {
+	v, err := g.View("chat")
+	if err != nil {
+		return err
+	}
+
+	_, h := v.Size()
+	dy := int(float64(h) * mult)
+	x, y := v.Origin()
+	if y+dy >= 0 {
+		return v.SetOrigin(x, y+dy)
+	}
+	return nil
+
 }

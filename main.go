@@ -83,6 +83,22 @@ func runUI() {
 		log.Panicln(err)
 	}
 
+	if err := g.SetKeybinding("", gocui.KeyPgdn, gocui.ModNone, controller.PageDown); err != nil {
+		log.Panicln(err)
+	}
+
+	if err := g.SetKeybinding("", gocui.KeyPgup, gocui.ModNone, controller.PageUp); err != nil {
+		log.Panicln(err)
+	}
+
+	if err := g.SetKeybinding("", gocui.KeyCtrlD, gocui.ModNone, controller.HalfPageDown); err != nil {
+		log.Panicln(err)
+	}
+
+	if err := g.SetKeybinding("", gocui.KeyCtrlU, gocui.ModNone, controller.HalfPageUp); err != nil {
+		log.Panicln(err)
+	}
+
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
 	}
