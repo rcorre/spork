@@ -41,11 +41,7 @@ func NewManager(s *spark.Client, v ChatView) (Manager, error) {
 	rooms := make([]Room, len(roomList))
 	for i, r := range roomList {
 		rooms[i] = NewRoom(&r, s.Messages, people)
-		if err := rooms[i].Load(); err != nil {
-			return nil, err
-		}
 	}
-
 	return &manager{
 		spark:  s,
 		view:   v,
@@ -54,26 +50,49 @@ func NewManager(s *spark.Client, v ChatView) (Manager, error) {
 	}, nil
 }
 
+func (m *manager) updateRoom(g *gocui.Gui, r Room) {
+	g.Update(func(g *gocui.Gui) error {
+		if err := r.Load(); err != nil {
+			return err
+		}
+
+		if m.rooms[m.roomIdx] == r {
+			return m.view.Render(g, m.state())
+		}
+		return nil
+	})
+}
+
 func (m *manager) state() *State {
-	room := m.rooms[m.roomIdx]
 	return &State{
-		Messages: room.Messages(),
+		Messages: m.rooms[m.roomIdx].Messages(),
 		Rooms:    m.rooms,
 		RoomIdx:  m.roomIdx,
 	}
 }
 
 func (m *manager) NextRoom(g *gocui.Gui, _ *gocui.View) error {
-	return m.cycleRoom(g, 1)
+	room, err := m.cycleRoom(g, 1)
+	if err != nil {
+		return err
+	}
+	m.updateRoom(g, room)
+	return nil
 }
 
 func (m *manager) PrevRoom(g *gocui.Gui, _ *gocui.View) error {
-	return m.cycleRoom(g, -1)
+	room, err := m.cycleRoom(g, -1)
+	if err != nil {
+		return err
+	}
+	m.updateRoom(g, room)
+	return nil
 }
 
-func (m *manager) cycleRoom(g *gocui.Gui, direction int) error {
+func (m *manager) cycleRoom(g *gocui.Gui, direction int) (Room, error) {
 	m.roomIdx = (m.roomIdx + direction%len(m.rooms))
-	return m.view.Render(g, m.state())
+	err := m.view.Render(g, m.state())
+	return m.rooms[m.roomIdx], err
 }
 
 func (m *manager) PageUp(g *gocui.Gui, _ *gocui.View) error {

@@ -64,38 +64,38 @@ func runUI() {
 		panic(err)
 	}
 
-	controller, err := NewManager(s, NewChatView())
+	manager, err := NewManager(s, NewChatView())
 	if err != nil {
 		panic(err)
 	}
 
-	g.SetManager(controller)
+	g.SetManager(manager)
 
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		log.Panicln(err)
 	}
 
-	if err := g.SetKeybinding("", 'j', gocui.ModNone, controller.NextRoom); err != nil {
+	if err := g.SetKeybinding("", 'j', gocui.ModNone, manager.NextRoom); err != nil {
 		log.Panicln(err)
 	}
 
-	if err := g.SetKeybinding("", 'k', gocui.ModNone, controller.PrevRoom); err != nil {
+	if err := g.SetKeybinding("", 'k', gocui.ModNone, manager.PrevRoom); err != nil {
 		log.Panicln(err)
 	}
 
-	if err := g.SetKeybinding("", gocui.KeyPgdn, gocui.ModNone, controller.PageDown); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyPgdn, gocui.ModNone, manager.PageDown); err != nil {
 		log.Panicln(err)
 	}
 
-	if err := g.SetKeybinding("", gocui.KeyPgup, gocui.ModNone, controller.PageUp); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyPgup, gocui.ModNone, manager.PageUp); err != nil {
 		log.Panicln(err)
 	}
 
-	if err := g.SetKeybinding("", gocui.KeyCtrlD, gocui.ModNone, controller.HalfPageDown); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyCtrlD, gocui.ModNone, manager.HalfPageDown); err != nil {
 		log.Panicln(err)
 	}
 
-	if err := g.SetKeybinding("", gocui.KeyCtrlU, gocui.ModNone, controller.HalfPageUp); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyCtrlU, gocui.ModNone, manager.HalfPageUp); err != nil {
 		log.Panicln(err)
 	}
 
