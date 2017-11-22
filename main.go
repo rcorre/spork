@@ -58,6 +58,7 @@ func runUI() {
 		log.Panicln(err)
 	}
 	defer g.Close()
+	g.Cursor = true
 
 	s, err := getSpark()
 	if err != nil {
