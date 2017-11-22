@@ -75,11 +75,11 @@ func runUI() {
 		log.Panicln(err)
 	}
 
-	if err := g.SetKeybinding("", 'j', gocui.ModNone, manager.NextRoom); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyCtrlJ, gocui.ModNone, manager.NextRoom); err != nil {
 		log.Panicln(err)
 	}
 
-	if err := g.SetKeybinding("", 'k', gocui.ModNone, manager.PrevRoom); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyCtrlK, gocui.ModNone, manager.PrevRoom); err != nil {
 		log.Panicln(err)
 	}
 
