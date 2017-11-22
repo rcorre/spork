@@ -26,6 +26,7 @@ type State struct {
 
 func (*chatView) Render(g *gocui.Gui, state *State) error {
 	roomBarWidth := 30
+	inputHeight := 2
 	maxX, maxY := g.Size()
 	if v, err := g.SetView("chat", roomBarWidth, 0, maxX, maxY); err != nil && err != gocui.ErrUnknownView {
 		return err
@@ -37,6 +38,13 @@ func (*chatView) Render(g *gocui.Gui, state *State) error {
 		return err
 	} else {
 		drawRooms(v, state.Rooms, state.RoomIdx)
+	}
+
+	if v, err := g.SetView("input", roomBarWidth, maxY-inputHeight, maxX, maxY); err != nil && err != gocui.ErrUnknownView {
+		return err
+	} else {
+		v.Editable = true
+		g.SetCurrentView(v.Name())
 	}
 
 	return nil
