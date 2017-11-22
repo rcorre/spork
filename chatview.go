@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"text/tabwriter"
 
 	"github.com/jroimartin/gocui"
 	"github.com/mgutz/ansi"
@@ -28,19 +27,17 @@ type State struct {
 func (*chatView) Render(g *gocui.Gui, state *State) error {
 	roomBarWidth := 30
 	maxX, maxY := g.Size()
-	chatView, err := g.SetView("chat", roomBarWidth, 0, maxX, maxY)
-	if err != nil && err != gocui.ErrUnknownView {
+	if v, err := g.SetView("chat", roomBarWidth, 0, maxX, maxY); err != nil && err != gocui.ErrUnknownView {
 		return err
-	}
-	if err := drawMessages(chatView, state.Messages); err != nil {
-		return err
+	} else {
+		drawMessages(v, state.Messages)
 	}
 
-	roomView, err := g.SetView("rooms", 0, 0, roomBarWidth, maxY)
-	if err != nil && err != gocui.ErrUnknownView {
+	if v, err := g.SetView("rooms", 0, 0, roomBarWidth, maxY); err != nil && err != gocui.ErrUnknownView {
 		return err
+	} else {
+		drawRooms(v, state.Rooms, state.RoomIdx)
 	}
-	drawRooms(roomView, state.Rooms, state.RoomIdx)
 
 	return nil
 }
@@ -56,14 +53,17 @@ func drawRooms(v *gocui.View, rooms []Room, current int) {
 	}
 }
 
-func drawMessages(v *gocui.View, messages []Message) error {
-	w := new(tabwriter.Writer)
+func drawMessages(v *gocui.View, messages []Message) {
 	v.Clear()
-	w.Init(v, 8, 8, 1, ' ', 0)
+	var curSender string
 	for _, m := range messages {
-		fmt.Fprintf(w, "%s\t| %s\t| %s\n", m.Time, m.Sender, m.Text)
+		if m.Sender != curSender {
+			curSender = m.Sender
+			sender := ansi.Color(m.Sender, "white+b")
+			fmt.Fprintf(v, "\n--- %s (%s)  ---\n", sender, m.Time)
+		}
+		fmt.Fprintln(v, m.Text)
 	}
-	return w.Flush()
 }
 
 func (*chatView) Scroll(g *gocui.Gui, mult float64) error {
