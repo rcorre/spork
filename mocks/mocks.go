@@ -16,6 +16,11 @@ func (m *PeopleService) List(ids []string) ([]spark.Person, error) {
 	return args.Get(0).([]spark.Person), args.Error(1)
 }
 
+func (m *PeopleService) Me() (spark.Person, error) {
+	args := m.Called()
+	return args.Get(0).(spark.Person), args.Error(1)
+}
+
 type MessageService struct {
 	mock.Mock
 }
@@ -37,4 +42,9 @@ func (m *PersonCache) Get(id string) (string, error) {
 func (m *PersonCache) Load(ids []string) error {
 	args := m.Called(ids)
 	return args.Error(0)
+}
+
+func (m *PersonCache) IsMe(id string) bool {
+	args := m.Called(id)
+	return args.Bool(0)
 }
