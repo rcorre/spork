@@ -7,18 +7,25 @@ import (
 type PersonCache interface {
 	Get(id string) (string, error)
 	Load(ids []string) error
+	IsMe(id string) bool
 }
 
 type personCache struct {
 	svc   spark.PeopleService
 	cache map[string]string
+	me    string
 }
 
-func NewPersonCache(svc spark.PeopleService) PersonCache {
+func NewPersonCache(svc spark.PeopleService) (PersonCache, error) {
+	me, err := svc.Me()
+	if err != nil {
+		return nil, err
+	}
 	return &personCache{
 		svc:   svc,
 		cache: map[string]string{},
-	}
+		me:    me.ID,
+	}, nil
 }
 
 // Get retrieves a single person by id.
@@ -54,4 +61,8 @@ func (p *personCache) Load(ids []string) error {
 	}
 
 	return nil
+}
+
+func (p *personCache) IsMe(id string) bool {
+	return p.me == id
 }

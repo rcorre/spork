@@ -41,4 +41,30 @@ func (suite *PeopleTestSuite) TestList() {
 		{DisplayName: "Bar"},
 		{DisplayName: "Baz"},
 	})
+
+	restClient.AssertExpectations(suite.T())
+}
+
+func (suite *PeopleTestSuite) TestMe() {
+	restClient := &RESTClientMock{}
+	restClient.On(
+		"Get",
+		"people/me",
+		map[string]string(nil),
+		mock.Anything,
+	).Run(func(args mock.Arguments) {
+		out := args.Get(2).(*Person)
+		*out = Person{
+			ID:          "mee-123",
+			DisplayName: "Ryan",
+		}
+	}).Return(nil)
+	peopleService := NewPeopleService(restClient)
+
+	me, err := peopleService.Me()
+	suite.Nil(err)
+	suite.Equal(me.ID, "mee-123")
+	suite.Equal(me.DisplayName, "Ryan")
+
+	restClient.AssertExpectations(suite.T())
 }

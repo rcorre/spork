@@ -36,7 +36,10 @@ func NewManager(s *spark.Client, v ChatView) (Manager, error) {
 		return nil, err
 	}
 
-	people := NewPersonCache(s.People)
+	people, err := NewPersonCache(s.People)
+	if err != nil {
+		return nil, err
+	}
 
 	rooms := make([]Room, len(roomList))
 	for i, r := range roomList {

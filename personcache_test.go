@@ -18,6 +18,8 @@ func TestPersonCacheTestSuite(t *testing.T) {
 
 func (suite *PersonCacheTestSuite) TestGet() {
 	svc := &mocks.PeopleService{}
+	svc.On("Me").Return(spark.Person{}, nil)
+
 	svc.On(
 		"List",
 		[]string{"abc-123"},
@@ -26,7 +28,8 @@ func (suite *PersonCacheTestSuite) TestGet() {
 		nil,
 	)
 
-	people := NewPersonCache(svc)
+	people, err := NewPersonCache(svc)
+	suite.Nil(err)
 
 	name, err := people.Get("abc-123")
 	suite.Nil(err)
@@ -35,6 +38,22 @@ func (suite *PersonCacheTestSuite) TestGet() {
 	name, err = people.Get("abc-123")
 	suite.Nil(err)
 	suite.Equal("foo", name)
+
+	svc.AssertExpectations(suite.T())
+}
+
+func (suite *PersonCacheTestSuite) TestIsMe() {
+	svc := &mocks.PeopleService{}
+	svc.On("Me").Return(spark.Person{
+		ID:          "mee-123",
+		DisplayName: "Ryan",
+	}, nil)
+
+	people, err := NewPersonCache(svc)
+	suite.Nil(err)
+
+	suite.True(people.IsMe("mee-123"))
+	suite.False(people.IsMe("abc-123"))
 
 	svc.AssertExpectations(suite.T())
 }

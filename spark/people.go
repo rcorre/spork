@@ -7,6 +7,7 @@ import (
 
 type PeopleService interface {
 	List(ids []string) ([]Person, error)
+	Me() (Person, error)
 }
 
 type Person struct {
@@ -46,4 +47,12 @@ func (svc *peopleService) List(ids []string) ([]Person, error) {
 	}
 	err := svc.rest.Get("people", params, &list)
 	return list.Items, err
+}
+
+// List lists people
+// ids are the IDs of people to list
+func (svc *peopleService) Me() (Person, error) {
+	var me Person
+	err := svc.rest.Get("people/me", nil, &me)
+	return me, err
 }
