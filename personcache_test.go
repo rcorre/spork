@@ -26,7 +26,7 @@ func (suite *PersonCacheTestSuite) TestGet() {
 	).Return(
 		[]spark.Person{{ID: "abc-123", DisplayName: "foo"}},
 		nil,
-	)
+	).Once()
 
 	people, err := NewPersonCache(svc)
 	suite.Nil(err)

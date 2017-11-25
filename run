@@ -1,0 +1,9 @@
+#!/bin/sh
+
+export SPARK_TOKEN=`pass here/spark_api`
+
+export RLOG_LOG_LEVEL=DEBUG
+export RLOG_LOG_FILE=spork.log
+export RLOG_LOG_STREAM=none
+
+go run $(find . -maxdepth 1 -name '*.go' -not -name '*_test.go')
