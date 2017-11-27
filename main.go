@@ -100,6 +100,10 @@ func runUI() {
 		log.Panicln(err)
 	}
 
+	if err := g.SetKeybinding("", gocui.KeyEnter, gocui.ModNone, manager.Send); err != nil {
+		log.Panicln(err)
+	}
+
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
 	}

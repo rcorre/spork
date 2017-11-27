@@ -10,6 +10,7 @@ import (
 type ChatView interface {
 	Render(g *gocui.Gui, state *State) error
 	Scroll(g *gocui.Gui, mult float64) error
+	Input(g *gocui.Gui) (string, error)
 }
 
 type chatView struct{}
@@ -44,7 +45,9 @@ func (*chatView) Render(g *gocui.Gui, state *State) error {
 		return err
 	} else {
 		v.Editable = true
-		g.SetCurrentView(v.Name())
+		if _, err := g.SetCurrentView(v.Name()); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -87,5 +90,12 @@ func (*chatView) Scroll(g *gocui.Gui, mult float64) error {
 		return v.SetOrigin(x, y+dy)
 	}
 	return nil
+}
 
+func (*chatView) Input(g *gocui.Gui) (string, error) {
+	v, err := g.View("input")
+	if err != nil {
+		return "", err
+	}
+	return v.Buffer(), nil
 }

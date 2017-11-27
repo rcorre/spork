@@ -20,6 +20,7 @@ type Manager interface {
 	PageUp(g *gocui.Gui, _ *gocui.View) error
 	HalfPageDown(g *gocui.Gui, _ *gocui.View) error
 	HalfPageUp(g *gocui.Gui, _ *gocui.View) error
+	Send(g *gocui.Gui, _ *gocui.View) error
 }
 
 type manager struct {
@@ -114,6 +115,21 @@ func (m *manager) HalfPageUp(g *gocui.Gui, _ *gocui.View) error {
 
 func (m *manager) HalfPageDown(g *gocui.Gui, _ *gocui.View) error {
 	return m.view.Scroll(g, 1.0/2.0)
+}
+
+func (m *manager) Send(g *gocui.Gui, _ *gocui.View) error {
+	text, err := m.view.Input(g)
+	if err != nil {
+		return err
+	}
+
+	room := m.rooms[m.roomIdx]
+	if err := room.Send(text); err != nil {
+		return err
+	}
+
+	m.updateRoom(g, room)
+	return nil
 }
 
 func (m *manager) Layout(g *gocui.Gui) error {
