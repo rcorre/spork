@@ -9,6 +9,7 @@ type Room interface {
 	Title() string
 	Load() error
 	Messages() []Message
+	Send(text string) error
 }
 
 type room struct {
@@ -58,5 +59,27 @@ func (r *room) Load() error {
 	}
 
 	r.messages.Sort()
+	return nil
+}
+
+func (r *room) Send(text string) error {
+	msg, err := r.svc.Post(spark.Message{
+		RoomID: r.id,
+		Text:   text,
+	})
+	if err != nil {
+		return err
+	}
+
+	sender, err := r.people.Get(msg.PersonID)
+	if err != nil {
+		return err
+	}
+
+	r.messages = append(r.messages, Message{
+		Text:   msg.Text,
+		Sender: sender,
+		Time:   msg.Created,
+	})
 	return nil
 }

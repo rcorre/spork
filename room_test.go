@@ -22,16 +22,17 @@ func (suite *RoomTestSuite) TestTitle() {
 	suite.Equal(r.Title(), "My Awesome Room")
 }
 
+func t(s string) time.Time {
+	ret, err := time.Parse(time.RFC3339Nano, s)
+	if err != nil {
+		panic(err)
+	}
+	return ret
+}
+
 func (suite *RoomTestSuite) TestLoad() {
 	messageService := &mocks.MessageService{}
 	personCache := &mocks.PersonCache{}
-	t := func(s string) time.Time {
-		ret, err := time.Parse(time.RFC3339Nano, s)
-		if err != nil {
-			panic(err)
-		}
-		return ret
-	}
 	messageService.On(
 		"List",
 		"abc-123",
@@ -65,6 +66,48 @@ func (suite *RoomTestSuite) TestLoad() {
 		{Sender: "person3", Text: "buz", Time: t("2017-02-02T01:01:01.000Z")},
 		{Sender: "person1", Text: "foo", Time: t("2017-02-02T02:01:01.000Z")},
 	}
+
+	actual := room.Messages()
+	suite.Nil(err)
+	suite.Equal(expected, actual)
+
+	messageService.AssertExpectations(suite.T())
+	personCache.AssertExpectations(suite.T())
+}
+
+func (suite *RoomTestSuite) TestSend() {
+	messageService := &mocks.MessageService{}
+	personCache := &mocks.PersonCache{}
+	messageService.On(
+		"Post",
+		spark.Message{
+			RoomID: "abc-123",
+			Text:   "tally-ho!",
+		},
+	).Return(
+		spark.Message{
+			Text:     "tally-ho!",
+			PersonID: "person-123",
+			Created:  t("2016-01-01T01:01:01.000Z"),
+		},
+		nil,
+	).Once()
+
+	personCache.On("Get", "person-123").Return("person1", nil).Once()
+
+	room := NewRoom(
+		&spark.Room{ID: "abc-123"},
+		messageService,
+		personCache,
+	)
+	err := room.Send("tally-ho!")
+	suite.Nil(err)
+
+	expected := []Message{{
+		Sender: "person1",
+		Text:   "tally-ho!",
+		Time:   t("2016-01-01T01:01:01.000Z"),
+	}}
 
 	actual := room.Messages()
 	suite.Nil(err)
