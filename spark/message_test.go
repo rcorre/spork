@@ -40,3 +40,32 @@ func (suite *MessageTestSuite) TestList() {
 		{Text: "Baz"},
 	})
 }
+
+func (suite *MessageTestSuite) TestPost() {
+	restClient := &RESTClientMock{}
+	restClient.On(
+		"Post",
+		"messages",
+		&Message{RoomID: "abc-123", Text: "foobar"},
+		&Message{},
+	).Run(func(args mock.Arguments) {
+		out := args.Get(2).(*Message)
+		*out = Message{
+			ID:     "xyz-345",
+			RoomID: "abc-123",
+			Text:   "foobar",
+		}
+	}).Return(nil)
+	roomService := NewMessageService(restClient)
+
+	out, err := roomService.Post(Message{
+		RoomID: "abc-123",
+		Text:   "foobar",
+	})
+	suite.Nil(err)
+	suite.Equal(out, Message{
+		ID:     "xyz-345",
+		RoomID: "abc-123",
+		Text:   "foobar",
+	})
+}
