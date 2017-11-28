@@ -9,7 +9,7 @@ import (
 // Config contains configuration options for spork
 type Config struct {
 	SparkURL       string
-	SparkSocketURL string
+	SparkDeviceURL string
 }
 
 func LoadConfig(path string) (*Config, error) {

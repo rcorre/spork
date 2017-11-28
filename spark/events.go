@@ -10,8 +10,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const socketURL = "https://wdm-a.wbx2.com/wdm/api/v1/devices"
-
 type dialer interface {
 	Dial(urlStr string, requestHeader http.Header) (connection, *http.Response, error)
 }
@@ -41,10 +39,10 @@ type eventListener struct {
 	connect   func(url string) (connection, error)
 }
 
-func NewEventListener(token string) EventListener {
+func NewEventListener(deviceURL, token string) EventListener {
 	return &eventListener{
 		token: token,
-		rest:  NewRESTClient(socketURL, token),
+		rest:  NewRESTClient(deviceURL, token),
 		connect: func(url string) (connection, error) {
 			rlog.Debugf("connecting to %s", url)
 

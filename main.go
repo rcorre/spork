@@ -17,12 +17,12 @@ func main() {
 }
 
 func listen() {
-	_, err := LoadConfig("spork.yaml")
+	conf, err := LoadConfig("spork.yaml")
 	if err != nil {
 		panic(err)
 	}
 
-	s, err := getSpark()
+	s, err := getSpark(conf)
 	if err != nil {
 		panic(err)
 	}
@@ -58,6 +58,11 @@ func listen() {
 }
 
 func runUI() {
+	conf, err := LoadConfig("spork.yaml")
+	if err != nil {
+		panic(err)
+	}
+
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		log.Panicln(err)
@@ -65,7 +70,7 @@ func runUI() {
 	defer g.Close()
 	g.Cursor = true
 
-	s, err := getSpark()
+	s, err := getSpark(conf)
 	if err != nil {
 		panic(err)
 	}
@@ -114,12 +119,12 @@ func runUI() {
 	}
 }
 
-func getSpark() (*spark.Client, error) {
+func getSpark(conf *Config) (*spark.Client, error) {
 	token, ok := os.LookupEnv("SPARK_TOKEN")
 	if !ok {
 		return nil, fmt.Errorf("SPARK_TOKEN must be set")
 	}
-	return spark.New("", token), nil
+	return spark.New(conf.SparkURL, conf.SparkDeviceURL, token), nil
 }
 
 func quit(g *gocui.Gui, v *gocui.View) error {

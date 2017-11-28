@@ -22,13 +22,13 @@ func (suite *ConfigTestSuite) TestLoadConfig() {
 
 	_, err = tmpfile.WriteString(strings.Replace(`
 		sparkURL: "http://example.com"
-		sparkSocketURL: "http://example.com/socket"
+		sparkDeviceURL: "http://example.com/devices"
 	`, "\t", "    ", -1))
 	suite.Nil(err)
 
 	expected := &Config{
 		SparkURL:       "http://example.com",
-		SparkSocketURL: "http://example.com/socket",
+		SparkDeviceURL: "http://example.com/devices",
 	}
 	actual, err := LoadConfig(tmpfile.Name())
 	suite.Nil(err)
