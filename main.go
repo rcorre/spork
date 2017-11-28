@@ -17,6 +17,11 @@ func main() {
 }
 
 func listen() {
+	_, err := LoadConfig("spork.yaml")
+	if err != nil {
+		panic(err)
+	}
+
 	s, err := getSpark()
 	if err != nil {
 		panic(err)
