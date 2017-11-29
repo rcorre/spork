@@ -20,7 +20,7 @@ type Person struct {
 	OrgID         string
 	Roles         []string
 	Licenses      []string
-	Created       string
+	Created       time.Time
 	Timezone      string
 	LastActivity  time.Time
 	Status        string
