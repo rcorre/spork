@@ -32,6 +32,7 @@ func (*chatView) Render(g *gocui.Gui, state *State) error {
 	if v, err := g.SetView("chat", roomBarWidth, 0, maxX, maxY); err != nil && err != gocui.ErrUnknownView {
 		return err
 	} else {
+		v.Wrap = true
 		drawMessages(v, state.Messages)
 	}
 
