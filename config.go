@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"os"
 
 	"github.com/ghodss/yaml"
 )
@@ -15,6 +16,9 @@ type Config struct {
 func LoadConfig(path string) (*Config, error) {
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return &Config{}, nil
+		}
 		return nil, err
 	}
 

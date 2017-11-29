@@ -34,3 +34,10 @@ func (suite *ConfigTestSuite) TestLoadConfig() {
 	suite.Nil(err)
 	suite.Equal(expected, actual)
 }
+
+func (suite *ConfigTestSuite) TestLoadConfigDefault() {
+	expected := &Config{}
+	actual, err := LoadConfig("nonexistantpath")
+	suite.Nil(err)
+	suite.Equal(expected, actual)
+}
