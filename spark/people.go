@@ -11,21 +11,21 @@ type PeopleService interface {
 }
 
 type Person struct {
-	ID            string
-	Emails        []string
-	DisplayName   string
-	FirstName     string
-	LastName      string
-	Avatar        string
-	OrgID         string
-	Roles         []string
-	Licenses      []string
-	Created       time.Time
-	Timezone      string
-	LastActivity  time.Time
-	Status        string
-	InvitePending bool
-	LoginEnabled  bool
+	ID            string    `json:"id"`
+	Emails        []string  `json:"emails"`
+	DisplayName   string    `json:"displayName"`
+	FirstName     string    `json:"firstName"`
+	LastName      string    `json:"lastName"`
+	Avatar        string    `json:"avatar"`
+	OrgID         string    `json:"orgId"`
+	Roles         []string  `json:"roles"`
+	Licenses      []string  `json:"licenses"`
+	Created       time.Time `json:"created"`
+	Timezone      string    `json:"timezone"`
+	LastActivity  time.Time `json:"lastActivity"`
+	Status        string    `json:"status"`
+	InvitePending bool      `json:"invitePending"`
+	LoginEnabled  bool      `json:"loginEnabled"`
 }
 
 type peopleService struct {

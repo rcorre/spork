@@ -8,18 +8,18 @@ type MessageService interface {
 }
 
 type Message struct {
-	ID              string
-	RoomID          string
-	RoomType        string
-	ToPersonID      string
-	ToPersonEmail   string
-	Text            string
-	Markdown        string
-	Files           []string
-	PersonID        string
-	PersonEmail     string
-	Created         time.Time
-	MentionedPeople []string
+	ID              string    `json:"id"`
+	RoomID          string    `json:"roomId"`
+	RoomType        string    `json:"roomType"`
+	ToPersonID      string    `json:"toPersonId"`
+	ToPersonEmail   string    `json:"toPersonEmail"`
+	Text            string    `json:"text"`
+	Markdown        string    `json:"markdown"`
+	Files           []string  `json:"files"`
+	PersonID        string    `json:"personId"`
+	PersonEmail     string    `json:"personEmail"`
+	Created         time.Time `json:"created"`
+	MentionedPeople []string  `json:"mentionedPeople"`
 }
 
 type messageService struct {
