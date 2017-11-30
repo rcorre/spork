@@ -100,7 +100,6 @@ func (m *manager) cycleRoom(g *gocui.Gui, direction int) (Room, error) {
 }
 
 func (m *manager) PageUp(g *gocui.Gui, _ *gocui.View) error {
-
 	return m.view.Scroll(g, -1)
 }
 
@@ -109,7 +108,6 @@ func (m *manager) PageDown(g *gocui.Gui, _ *gocui.View) error {
 }
 
 func (m *manager) HalfPageUp(g *gocui.Gui, _ *gocui.View) error {
-
 	return m.view.Scroll(g, -1.0/2.0)
 }
 
