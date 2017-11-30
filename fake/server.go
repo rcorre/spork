@@ -42,7 +42,7 @@ func init() {
 			Title:        "Room One",
 			Type:         "group",
 			IsLocked:     false,
-			TeamId:       "8ba5c515-6dab-4a66-ab72-b229bb0ddbfc",
+			TeamID:       "8ba5c515-6dab-4a66-ab72-b229bb0ddbfc",
 			LastActivity: time.Now(),
 			Created:      time.Now(),
 		},
@@ -62,7 +62,7 @@ func init() {
 			Title:        "Room Two",
 			Type:         "group",
 			IsLocked:     false,
-			TeamId:       "8ba5c515-6dab-4a66-ab72-b229bb0ddbfc",
+			TeamID:       "8ba5c515-6dab-4a66-ab72-b229bb0ddbfc",
 			LastActivity: time.Now(),
 			Created:      time.Now(),
 		},
@@ -103,7 +103,7 @@ func main() {
 	http.HandleFunc("/v1/people", handlePeople)
 	http.HandleFunc("/v1/people/me", handleMe)
 
-	log.Fatalln(http.ListenAndServe("localhost:3000", nil))
+	log.Fatalln(http.ListenAndServe("localhost:3001", nil))
 }
 
 func writeItems(resp http.ResponseWriter, items interface{}) {
@@ -169,7 +169,11 @@ func handleMessages(resp http.ResponseWriter, req *http.Request) {
 func handleRooms(resp http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
-		writeItems(resp, rooms)
+		body := make([]spark.Room, len(rooms))
+		for i, r := range rooms {
+			body[i] = r.Room
+		}
+		writeItems(resp, body)
 	default:
 		http.Error(resp, req.Method, http.StatusMethodNotAllowed)
 	}
