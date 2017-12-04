@@ -20,9 +20,9 @@ func NewChatView() ChatView {
 }
 
 type State struct {
-	Messages []Message
-	Rooms    []Room
-	RoomIdx  int
+	Messages   []Message
+	Rooms      []Room
+	ActiveRoom Room
 }
 
 func (*chatView) Render(g *gocui.Gui, state *State) error {
@@ -39,7 +39,7 @@ func (*chatView) Render(g *gocui.Gui, state *State) error {
 	if v, err := g.SetView("rooms", 0, 0, roomBarWidth, maxY); err != nil && err != gocui.ErrUnknownView {
 		return err
 	} else {
-		drawRooms(v, state.Rooms, state.RoomIdx)
+		drawRooms(v, state.Rooms, state.ActiveRoom)
 	}
 
 	if v, err := g.SetView("input", roomBarWidth, maxY-inputHeight, maxX, maxY); err != nil && err != gocui.ErrUnknownView {
@@ -54,11 +54,11 @@ func (*chatView) Render(g *gocui.Gui, state *State) error {
 	return nil
 }
 
-func drawRooms(v *gocui.View, rooms []Room, current int) {
+func drawRooms(v *gocui.View, rooms []Room, active Room) {
 	v.Clear()
-	for i, r := range rooms {
+	for _, r := range rooms {
 		title := r.Title()
-		if i == current {
+		if r == active {
 			title = ansi.Color(r.Title(), "white+b")
 		}
 		fmt.Fprintf(v, "%s\n", title)

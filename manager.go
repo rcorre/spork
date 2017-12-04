@@ -24,11 +24,11 @@ type Manager interface {
 }
 
 type manager struct {
-	spark   *spark.Client
-	view    ChatView
-	roomIdx int
-	rooms   []Room
-	people  PersonCache
+	spark      *spark.Client
+	view       ChatView
+	activeRoom Room
+	rooms      []Room
+	people     PersonCache
 }
 
 func NewManager(s *spark.Client, v ChatView) (Manager, error) {
@@ -47,10 +47,11 @@ func NewManager(s *spark.Client, v ChatView) (Manager, error) {
 		rooms[i] = NewRoom(&r, s.Messages, people)
 	}
 	return &manager{
-		spark:  s,
-		view:   v,
-		rooms:  rooms,
-		people: people,
+		spark:      s,
+		view:       v,
+		rooms:      rooms,
+		activeRoom: rooms[0],
+		people:     people,
 	}, nil
 }
 
@@ -60,7 +61,7 @@ func (m *manager) updateRoom(g *gocui.Gui, r Room) {
 			return err
 		}
 
-		if m.rooms[m.roomIdx] == r {
+		if m.activeRoom == r {
 			return m.view.Render(g, m.state())
 		}
 		return nil
@@ -69,9 +70,9 @@ func (m *manager) updateRoom(g *gocui.Gui, r Room) {
 
 func (m *manager) state() *State {
 	return &State{
-		Messages: m.rooms[m.roomIdx].Messages(),
-		Rooms:    m.rooms,
-		RoomIdx:  m.roomIdx,
+		Messages:   m.activeRoom.Messages(),
+		Rooms:      m.rooms,
+		ActiveRoom: m.activeRoom,
 	}
 }
 
@@ -94,9 +95,17 @@ func (m *manager) PrevRoom(g *gocui.Gui, _ *gocui.View) error {
 }
 
 func (m *manager) cycleRoom(g *gocui.Gui, direction int) (Room, error) {
-	m.roomIdx = (m.roomIdx + direction%len(m.rooms))
+	curIdx := 0
+	for i, r := range m.rooms {
+		if r == m.activeRoom {
+			curIdx = i
+			break
+		}
+	}
+	idx := (curIdx + direction) % len(m.rooms)
+	m.activeRoom = m.rooms[idx]
 	err := m.view.Render(g, m.state())
-	return m.rooms[m.roomIdx], err
+	return m.activeRoom, err
 }
 
 func (m *manager) PageUp(g *gocui.Gui, _ *gocui.View) error {
@@ -121,12 +130,11 @@ func (m *manager) Send(g *gocui.Gui, _ *gocui.View) error {
 		return err
 	}
 
-	room := m.rooms[m.roomIdx]
-	if err := room.Send(text); err != nil {
+	if err := m.activeRoom.Send(text); err != nil {
 		return err
 	}
 
-	m.updateRoom(g, room)
+	m.updateRoom(g, m.activeRoom)
 	return nil
 }
 
