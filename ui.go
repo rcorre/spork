@@ -7,16 +7,16 @@ import (
 	"github.com/mgutz/ansi"
 )
 
-type ChatView interface {
+type UI interface {
 	Render(g *gocui.Gui, state *State) error
 	Scroll(g *gocui.Gui, mult float64) error
 	Input(g *gocui.Gui) (string, error)
 }
 
-type chatView struct{}
+type ui struct{}
 
-func NewChatView() ChatView {
-	return &chatView{}
+func NewUI() UI {
+	return &ui{}
 }
 
 type State struct {
@@ -25,7 +25,7 @@ type State struct {
 	ActiveRoom Room
 }
 
-func (*chatView) Render(g *gocui.Gui, state *State) error {
+func (*ui) Render(g *gocui.Gui, state *State) error {
 	roomBarWidth := 30
 	inputHeight := 2
 	maxX, maxY := g.Size()
@@ -78,7 +78,7 @@ func drawMessages(v *gocui.View, messages []Message) {
 	}
 }
 
-func (*chatView) Scroll(g *gocui.Gui, mult float64) error {
+func (*ui) Scroll(g *gocui.Gui, mult float64) error {
 	v, err := g.View("chat")
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func (*chatView) Scroll(g *gocui.Gui, mult float64) error {
 	return nil
 }
 
-func (*chatView) Input(g *gocui.Gui) (string, error) {
+func (*ui) Input(g *gocui.Gui) (string, error) {
 	v, err := g.View("input")
 	if err != nil {
 		return "", err

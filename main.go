@@ -75,7 +75,7 @@ func runUI() {
 		panic(err)
 	}
 
-	manager, err := NewManager(s, NewChatView())
+	manager, err := NewManager(s, NewUI())
 	if err != nil {
 		panic(err)
 	}

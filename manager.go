@@ -25,13 +25,13 @@ type Manager interface {
 
 type manager struct {
 	spark      *spark.Client
-	view       ChatView
+	view       UI
 	activeRoom Room
 	rooms      []Room
 	people     PersonCache
 }
 
-func NewManager(s *spark.Client, v ChatView) (Manager, error) {
+func NewManager(s *spark.Client, v UI) (Manager, error) {
 	roomList, err := s.Rooms.List()
 	if err != nil {
 		return nil, err
