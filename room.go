@@ -1,20 +1,23 @@
 package main
 
 import (
+	"sort"
+	"time"
+
 	"github.com/rcorre/spork/spark"
 )
 
 // Room represents a spark room
 type Room interface {
 	Title() string
+	LastActivity() time.Time
 	Load() error
 	Messages() []Message
 	Send(text string) error
 }
 
 type room struct {
-	id       string
-	title    string
+	data     spark.Room
 	svc      spark.MessageService
 	people   PersonCache
 	messages MessageList
@@ -23,15 +26,18 @@ type room struct {
 // NewRoom creates a Room wrapping a spark.Room
 func NewRoom(src *spark.Room, svc spark.MessageService, people PersonCache) Room {
 	return &room{
-		id:     src.ID,
-		title:  src.Title,
+		data:   *src,
 		svc:    svc,
 		people: people,
 	}
 }
 
 func (r *room) Title() string {
-	return r.title
+	return r.data.Title
+}
+
+func (r *room) LastActivity() time.Time {
+	return r.data.LastActivity
 }
 
 func (r *room) Messages() []Message {
@@ -39,7 +45,7 @@ func (r *room) Messages() []Message {
 }
 
 func (r *room) Load() error {
-	messages, err := r.svc.List(r.id)
+	messages, err := r.svc.List(r.data.ID)
 	if err != nil {
 		return err
 	}
@@ -64,7 +70,7 @@ func (r *room) Load() error {
 
 func (r *room) Send(text string) error {
 	msg, err := r.svc.Post(spark.Message{
-		RoomID: r.id,
+		RoomID: r.data.ID,
 		Text:   text,
 	})
 	if err != nil {
@@ -82,4 +88,23 @@ func (r *room) Send(text string) error {
 		Time:   msg.Created,
 	})
 	return nil
+}
+
+// RoomList implements sort.Interface to sort rooms by last activity
+type RoomList []Room
+
+func (m RoomList) Len() int {
+	return len(m)
+}
+
+func (m RoomList) Less(i, j int) bool {
+	return m[i].LastActivity().After(m[j].LastActivity())
+}
+
+func (m RoomList) Swap(i, j int) {
+	m[i], m[j] = m[j], m[i]
+}
+
+func (m RoomList) Sort() {
+	sort.Sort(m)
 }

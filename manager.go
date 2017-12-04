@@ -27,7 +27,7 @@ type manager struct {
 	spark      *spark.Client
 	view       UI
 	activeRoom Room
-	rooms      []Room
+	rooms      RoomList
 	people     PersonCache
 }
 
@@ -42,10 +42,12 @@ func NewManager(s *spark.Client, v UI) (Manager, error) {
 		return nil, err
 	}
 
-	rooms := make([]Room, len(roomList))
+	rooms := make(RoomList, len(roomList))
 	for i, r := range roomList {
 		rooms[i] = NewRoom(&r, s.Messages, people)
 	}
+	rooms.Sort()
+
 	return &manager{
 		spark:      s,
 		view:       v,
@@ -60,6 +62,8 @@ func (m *manager) updateRoom(g *gocui.Gui, r Room) {
 		if err := r.Load(); err != nil {
 			return err
 		}
+
+		m.rooms.Sort()
 
 		if m.activeRoom == r {
 			return m.view.Render(g, m.state())
