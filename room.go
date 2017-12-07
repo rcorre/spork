@@ -37,7 +37,7 @@ func (r *room) Title() string {
 }
 
 func (r *room) LastActivity() time.Time {
-	return r.data.LastActivity
+	return *r.data.LastActivity
 }
 
 func (r *room) Messages() []Message {
@@ -60,7 +60,7 @@ func (r *room) Load() error {
 		r.messages[i] = Message{
 			Text:   msg.Text,
 			Sender: sender,
-			Time:   msg.Created,
+			Time:   *msg.Created,
 		}
 	}
 
@@ -85,7 +85,7 @@ func (r *room) Send(text string) error {
 	r.messages = append(r.messages, Message{
 		Text:   msg.Text,
 		Sender: sender,
-		Time:   msg.Created,
+		Time:   *msg.Created,
 	})
 	return nil
 }

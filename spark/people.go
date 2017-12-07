@@ -11,21 +11,21 @@ type PeopleService interface {
 }
 
 type Person struct {
-	ID            string    `json:"id,omitempty"`
-	Emails        []string  `json:"emails,omitempty"`
-	DisplayName   string    `json:"displayName,omitempty"`
-	FirstName     string    `json:"firstName,omitempty"`
-	LastName      string    `json:"lastName,omitempty"`
-	Avatar        string    `json:"avatar,omitempty"`
-	OrgID         string    `json:"orgId,omitempty"`
-	Roles         []string  `json:"roles,omitempty"`
-	Licenses      []string  `json:"licenses,omitempty"`
-	Created       time.Time `json:"created,omitempty"`
-	Timezone      string    `json:"timezone,omitempty"`
-	LastActivity  time.Time `json:"lastActivity,omitempty"`
-	Status        string    `json:"status,omitempty"`
-	InvitePending bool      `json:"invitePending,omitempty"`
-	LoginEnabled  bool      `json:"loginEnabled,omitempty"`
+	ID            string     `json:"id,omitempty"`
+	Emails        []string   `json:"emails,omitempty"`
+	DisplayName   string     `json:"displayName,omitempty"`
+	FirstName     string     `json:"firstName,omitempty"`
+	LastName      string     `json:"lastName,omitempty"`
+	Avatar        string     `json:"avatar,omitempty"`
+	OrgID         string     `json:"orgId,omitempty"`
+	Roles         []string   `json:"roles,omitempty"`
+	Licenses      []string   `json:"licenses,omitempty"`
+	Created       *time.Time `json:"created,omitempty"`
+	Timezone      string     `json:"timezone,omitempty"`
+	LastActivity  *time.Time `json:"lastActivity,omitempty"`
+	Status        string     `json:"status,omitempty"`
+	InvitePending bool       `json:"invitePending,omitempty"`
+	LoginEnabled  bool       `json:"loginEnabled,omitempty"`
 }
 
 type peopleService struct {
