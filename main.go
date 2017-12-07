@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -12,55 +11,9 @@ import (
 )
 
 func main() {
-	runUI()
-	//listen()
-}
-
-func listen() {
 	conf, err := LoadConfig("spork.yaml")
 	if err != nil {
-		panic(err)
-	}
-
-	s, err := getSpark(conf)
-	if err != nil {
-		panic(err)
-	}
-	e := s.Events
-	if err := e.Register(); err != nil {
-		panic(err)
-	}
-	defer func() {
-		if err := e.UnRegister(); err != nil {
-			rlog.Errorf("Failed to unregister websocket: %v", err)
-		} else {
-			rlog.Info("Device unregistered")
-		}
-	}()
-	msgChan, errChan, err := e.Listen()
-	if err != nil {
-		panic(err)
-	}
-
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
-
-	for {
-		select {
-		case msg := <-msgChan:
-			rlog.Infof("msg: %s", msg)
-		case err := <-errChan:
-			rlog.Errorf("err: %v", err)
-		case <-interrupt:
-			return
-		}
-	}
-}
-
-func runUI() {
-	conf, err := LoadConfig("spork.yaml")
-	if err != nil {
-		panic(err)
+		log.Panicln(err)
 	}
 
 	g, err := gocui.NewGui(gocui.OutputNormal)
@@ -70,14 +23,15 @@ func runUI() {
 	defer g.Close()
 	g.Cursor = true
 
-	s, err := getSpark(conf)
-	if err != nil {
-		panic(err)
+	token, ok := os.LookupEnv("SPARK_TOKEN")
+	if !ok {
+		log.Panicln("SPARK_TOKEN must be set")
 	}
 
+	s := spark.New(conf.SparkURL, conf.SparkDeviceURL, token)
 	manager, err := NewManager(s, NewUI())
 	if err != nil {
-		panic(err)
+		log.Panicln(err)
 	}
 
 	g.SetManager(manager)
@@ -119,12 +73,35 @@ func runUI() {
 	}
 }
 
-func getSpark(conf *Config) (*spark.Client, error) {
-	token, ok := os.LookupEnv("SPARK_TOKEN")
-	if !ok {
-		return nil, fmt.Errorf("SPARK_TOKEN must be set")
+func listen(s spark.Client, m Manager, conf *Config) {
+	if err := s.Events.Register(); err != nil {
+		panic(err)
 	}
-	return spark.New(conf.SparkURL, conf.SparkDeviceURL, token), nil
+	defer func() {
+		if err := s.Events.UnRegister(); err != nil {
+			rlog.Errorf("Failed to unregister websocket: %v", err)
+		} else {
+			rlog.Info("Device unregistered")
+		}
+	}()
+	msgChan, errChan, err := s.Events.Listen()
+	if err != nil {
+		panic(err)
+	}
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+
+	for {
+		select {
+		case msg := <-msgChan:
+			rlog.Infof("msg: %s", msg)
+		case err := <-errChan:
+			rlog.Errorf("err: %v", err)
+		case <-interrupt:
+			return
+		}
+	}
 }
 
 func quit(g *gocui.Gui, v *gocui.View) error {

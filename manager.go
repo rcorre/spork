@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/jroimartin/gocui"
 	"github.com/rcorre/spork/spark"
+	"github.com/romana/rlog"
 )
 
 const (
@@ -14,6 +15,9 @@ const (
 type Manager interface {
 	gocui.Manager
 
+	Handle(g *gocui.Gui, ev *spark.Event) error
+
+	// bindable commands
 	NextRoom(g *gocui.Gui, _ *gocui.View) error
 	PrevRoom(g *gocui.Gui, _ *gocui.View) error
 	PageDown(g *gocui.Gui, _ *gocui.View) error
@@ -55,6 +59,11 @@ func NewManager(s *spark.Client, v UI) (Manager, error) {
 		activeRoom: rooms[0],
 		people:     people,
 	}, nil
+}
+
+func (m *manager) Handle(g *gocui.Gui, ev *spark.Event) error {
+	rlog.Infof("msg: %+v", ev)
+	return nil
 }
 
 func (m *manager) updateRoom(g *gocui.Gui, r Room) {
