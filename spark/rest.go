@@ -66,8 +66,15 @@ func (c *restClient) do(req *http.Request, out interface{}) error {
 	if err != nil {
 		return c.err("Request %+v failed: %v", req, err)
 	}
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return c.err("Request %+v could not read body from %+v: %v", req, resp, err)
+	}
+	c.dbg("Got response body %s", bytes)
+
 	if resp.StatusCode < 200 || resp.StatusCode > 300 {
-		return c.err("Request %+v had an error response: %+v", req, resp)
+		return c.err("Request %+v had an error response: %+v (%s)", req, resp, bytes)
 	}
 
 	defer func() {
@@ -75,12 +82,6 @@ func (c *restClient) do(req *http.Request, out interface{}) error {
 			rlog.Info("Error closing response body: %v")
 		}
 	}()
-
-	bytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return c.err("Request %+v could not read body from %+v: %v", req, resp, err)
-	}
-	c.dbg("Got response body %s", bytes)
 
 	if err = json.Unmarshal(bytes, &out); err != nil {
 		return c.err("Could not unmarshal %s into %+v: %v", bytes, out, err)
@@ -131,6 +132,8 @@ func (c *restClient) Post(path string, body interface{}, out interface{}) error 
 	if err != nil {
 		return err
 	}
+
+	c.dbg("Sending body:\n%s\n", jsonBody)
 
 	req, err := http.NewRequest("POST", c.url+path, bytes.NewReader(jsonBody))
 	if err != nil {
