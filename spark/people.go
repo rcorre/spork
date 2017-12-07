@@ -11,21 +11,21 @@ type PeopleService interface {
 }
 
 type Person struct {
-	ID            string    `json:"id"`
-	Emails        []string  `json:"emails"`
-	DisplayName   string    `json:"displayName"`
-	FirstName     string    `json:"firstName"`
-	LastName      string    `json:"lastName"`
-	Avatar        string    `json:"avatar"`
-	OrgID         string    `json:"orgId"`
-	Roles         []string  `json:"roles"`
-	Licenses      []string  `json:"licenses"`
-	Created       time.Time `json:"created"`
-	Timezone      string    `json:"timezone"`
-	LastActivity  time.Time `json:"lastActivity"`
-	Status        string    `json:"status"`
-	InvitePending bool      `json:"invitePending"`
-	LoginEnabled  bool      `json:"loginEnabled"`
+	ID            string    `json:"id,omitempty"`
+	Emails        []string  `json:"emails,omitempty"`
+	DisplayName   string    `json:"displayName,omitempty"`
+	FirstName     string    `json:"firstName,omitempty"`
+	LastName      string    `json:"lastName,omitempty"`
+	Avatar        string    `json:"avatar,omitempty"`
+	OrgID         string    `json:"orgId,omitempty"`
+	Roles         []string  `json:"roles,omitempty"`
+	Licenses      []string  `json:"licenses,omitempty"`
+	Created       time.Time `json:"created,omitempty"`
+	Timezone      string    `json:"timezone,omitempty"`
+	LastActivity  time.Time `json:"lastActivity,omitempty"`
+	Status        string    `json:"status,omitempty"`
+	InvitePending bool      `json:"invitePending,omitempty"`
+	LoginEnabled  bool      `json:"loginEnabled,omitempty"`
 }
 
 type peopleService struct {

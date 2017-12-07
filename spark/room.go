@@ -7,13 +7,13 @@ type RoomService interface {
 }
 
 type Room struct {
-	ID           string    `json:"id"`
-	Title        string    `json:"title"`
-	Type         string    `json:"type"`
-	IsLocked     bool      `json:"isLocked"`
-	TeamID       string    `json:"teamId"`
-	LastActivity time.Time `json:"lastActivity"`
-	Created      time.Time `json:"created"`
+	ID           string    `json:"id,omitempty"`
+	Title        string    `json:"title,omitempty"`
+	Type         string    `json:"type,omitempty"`
+	IsLocked     bool      `json:"isLocked,omitempty"`
+	TeamID       string    `json:"teamId,omitempty"`
+	LastActivity time.Time `json:"lastActivity,omitempty"`
+	Created      time.Time `json:"created,omitempty"`
 }
 
 type roomService struct {
