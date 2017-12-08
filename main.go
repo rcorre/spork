@@ -36,35 +36,7 @@ func main() {
 
 	g.SetManager(manager)
 
-	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
-		log.Panicln(err)
-	}
-
-	if err := g.SetKeybinding("", gocui.KeyCtrlJ, gocui.ModNone, manager.NextRoom); err != nil {
-		log.Panicln(err)
-	}
-
-	if err := g.SetKeybinding("", gocui.KeyCtrlK, gocui.ModNone, manager.PrevRoom); err != nil {
-		log.Panicln(err)
-	}
-
-	if err := g.SetKeybinding("", gocui.KeyPgdn, gocui.ModNone, manager.PageDown); err != nil {
-		log.Panicln(err)
-	}
-
-	if err := g.SetKeybinding("", gocui.KeyPgup, gocui.ModNone, manager.PageUp); err != nil {
-		log.Panicln(err)
-	}
-
-	if err := g.SetKeybinding("", gocui.KeyCtrlD, gocui.ModNone, manager.HalfPageDown); err != nil {
-		log.Panicln(err)
-	}
-
-	if err := g.SetKeybinding("", gocui.KeyCtrlU, gocui.ModNone, manager.HalfPageUp); err != nil {
-		log.Panicln(err)
-	}
-
-	if err := g.SetKeybinding("", gocui.KeyEnter, gocui.ModNone, manager.Send); err != nil {
+	if err := manager.BindKeys(g, conf.Keys); err != nil {
 		log.Panicln(err)
 	}
 
@@ -102,8 +74,4 @@ func listen(s spark.Client, m Manager, conf *Config) {
 			return
 		}
 	}
-}
-
-func quit(g *gocui.Gui, v *gocui.View) error {
-	return gocui.ErrQuit
 }
