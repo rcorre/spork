@@ -46,6 +46,7 @@ func (*ui) Render(g *gocui.Gui, state *State) error {
 		return err
 	} else {
 		v.Editable = true
+		v.Editor = &Editor{}
 		if _, err := g.SetCurrentView(v.Name()); err != nil {
 			return err
 		}
