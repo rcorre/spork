@@ -29,7 +29,7 @@ func LoadConfig(path string) (*Config, error) {
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &Config{}, nil
+			return &conf, nil
 		}
 		return nil, err
 	}

@@ -15,6 +15,7 @@ func main() {
 	if err != nil {
 		log.Panicln(err)
 	}
+	rlog.Debug("Config:", conf)
 
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
