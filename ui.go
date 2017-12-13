@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jroimartin/gocui"
 	"github.com/mgutz/ansi"
@@ -28,21 +29,21 @@ type State struct {
 func (*ui) Render(g *gocui.Gui, state *State) error {
 	roomBarWidth := 30
 	inputHeight := 2
-	maxX, maxY := g.Size()
-	if v, err := g.SetView("chat", roomBarWidth, 0, maxX, maxY); err != nil && err != gocui.ErrUnknownView {
+	maxX, yMax := g.Size()
+	if v, err := g.SetView("chat", roomBarWidth, 0, maxX, yMax); err != nil && err != gocui.ErrUnknownView {
 		return err
 	} else {
 		v.Wrap = true
 		drawMessages(v, state.Messages)
 	}
 
-	if v, err := g.SetView("rooms", 0, 0, roomBarWidth, maxY); err != nil && err != gocui.ErrUnknownView {
+	if v, err := g.SetView("rooms", 0, 0, roomBarWidth, yMax); err != nil && err != gocui.ErrUnknownView {
 		return err
 	} else {
 		drawRooms(v, state.Rooms, state.ActiveRoom)
 	}
 
-	if v, err := g.SetView("input", roomBarWidth, maxY-inputHeight, maxX, maxY); err != nil && err != gocui.ErrUnknownView {
+	if v, err := g.SetView("input", roomBarWidth, yMax-inputHeight, maxX, yMax); err != nil && err != gocui.ErrUnknownView {
 		return err
 	} else {
 		v.Editable = true
@@ -88,10 +89,14 @@ func (*ui) Scroll(g *gocui.Gui, mult float64) error {
 	_, h := v.Size()
 	dy := int(float64(h) * mult)
 	x, y := v.Origin()
-	if y+dy >= 0 {
-		return v.SetOrigin(x, y+dy)
+	yNew := y + dy
+	yMax := strings.Count(v.ViewBuffer(), "\n") - h + 1
+	if yNew < 0 {
+		yNew = 0
+	} else if yNew > yMax {
+		yNew = yMax
 	}
-	return nil
+	return v.SetOrigin(x, yNew)
 }
 
 func (*ui) Input(g *gocui.Gui) (string, error) {
