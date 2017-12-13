@@ -100,22 +100,37 @@ func (e *eventListener) UnRegister() error {
 	return err
 }
 
+// Actor represents a person that triggered an event
+type Actor struct {
+	ID           string
+	ObjectType   string
+	DisplayName  string
+	OrgId        string
+	EmailAddress string
+	EntryUUID    string
+	Type         string
+}
+
+// Event contains the data from a spark websocket event
 type Event struct {
 	ID   string
 	Data struct {
 		EventType string
-		Activity  struct {
+		// Activity is populated for conversation activities
+		Activity struct {
+			// ID is the ID of the message for a post event
+			ID    string
 			Verb  string
-			Actor struct {
-				ID           string
-				ObjectType   string
-				DisplayName  string
-				OrgId        string
-				EmailAddress string
-				EntryUUID    string
-				Type         string
+			Actor Actor
+			// Target is the object the activity affects
+			Target struct {
+				ID string
 			}
 		}
+		// ConversationID is populated for start/stop typing events
+		ConversationID string
+		// Actor is populated for non-conversation activities
+		Actor Actor
 	}
 }
 

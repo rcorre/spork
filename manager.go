@@ -174,7 +174,43 @@ func (m *manager) BindKeys(g *gocui.Gui, keys map[string]string) error {
 }
 
 func (m *manager) Handle(g *gocui.Gui, ev *spark.Event) error {
-	rlog.Infof("msg: %+v", ev)
+	rlog.Debugf("Processing spark event: %+v", ev)
+	switch ev.Data.EventType {
+	case "conversation.activity":
+		activity := ev.Data.Activity
+		fromID := activity.Actor.EntryUUID
+		roomID := activity.Target.ID
+		if activity.Verb == "acknowledge" {
+			m.handleAcknowledge(g, roomID, fromID)
+		} else if activity.Verb == "post" {
+			msgID := activity.ID
+			m.handleMessage(g, roomID, msgID)
+		}
+	case "status.start_typing":
+		roomID := ev.Data.ConversationID
+		fromID := ev.Data.Actor.EntryUUID
+		m.handleStartTyping(g, roomID, fromID)
+	case "status.stop_typing":
+		roomID := ev.Data.ConversationID
+		fromID := ev.Data.Actor.EntryUUID
+		m.handleStopTyping(g, roomID, fromID)
+	}
+	return nil
+}
+
+func (m *manager) handleAcknowledge(g *gocui.Gui, roomID, personID string) error {
+	return nil
+}
+
+func (m *manager) handleMessage(g *gocui.Gui, roomID, msgID string) error {
+	return nil
+}
+
+func (m *manager) handleStartTyping(g *gocui.Gui, roomID, personID string) error {
+	return nil
+}
+
+func (m *manager) handleStopTyping(g *gocui.Gui, roomID, personID string) error {
 	return nil
 }
 
