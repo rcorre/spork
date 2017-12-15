@@ -41,6 +41,24 @@ func (suite *MessageTestSuite) TestList() {
 	})
 }
 
+func (suite *MessageTestSuite) TestGet() {
+	restClient := &RESTClientMock{}
+	restClient.On(
+		"Get",
+		"messages/msg-12345",
+		map[string]string(nil),
+		&Message{},
+	).Run(func(args mock.Arguments) {
+		out := args.Get(2).(*Message)
+		*out = Message{Text: "Foo"}
+	}).Return(nil)
+	svc := NewMessageService(restClient)
+
+	actual, err := svc.Get("msg-12345")
+	suite.Nil(err)
+	suite.Equal(Message{Text: "Foo"}, actual)
+}
+
 func (suite *MessageTestSuite) TestPost() {
 	restClient := &RESTClientMock{}
 	restClient.On(

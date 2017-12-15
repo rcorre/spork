@@ -1,9 +1,13 @@
 package spark
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type MessageService interface {
 	List(roomID string) ([]Message, error)
+	Get(id string) (Message, error)
 	Post(msg Message) (Message, error)
 }
 
@@ -41,6 +45,15 @@ func (svc *messageService) List(roomID string) ([]Message, error) {
 	}
 	err := svc.rest.Get("messages", params, &list)
 	return list.Items, err
+}
+
+// Get retrieves a single message
+// id is the message id
+func (svc *messageService) Get(id string) (Message, error) {
+	var msg Message
+	url := fmt.Sprintf("messages/%s", id)
+	err := svc.rest.Get(url, nil, &msg)
+	return msg, err
 }
 
 // Post posts a message
