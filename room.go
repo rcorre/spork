@@ -9,6 +9,7 @@ import (
 
 // Room represents a spark room
 type Room interface {
+	ID() string
 	Title() string
 	LastActivity() time.Time
 	Load() error
@@ -30,6 +31,10 @@ func NewRoom(src *spark.Room, svc spark.MessageService, people PersonCache) Room
 		svc:    svc,
 		people: people,
 	}
+}
+
+func (r *room) ID() string {
+	return r.data.ID
 }
 
 func (r *room) Title() string {
@@ -107,4 +112,14 @@ func (m RoomList) Swap(i, j int) {
 
 func (m RoomList) Sort() {
 	sort.Sort(m)
+}
+
+func (m RoomList) ByID(id string) Room {
+	for _, r := range m {
+		if r.ID() == id {
+			return r
+		}
+	}
+
+	return nil
 }
