@@ -6,6 +6,7 @@ import (
 
 	"github.com/jroimartin/gocui"
 	"github.com/mgutz/ansi"
+	"github.com/romana/rlog"
 )
 
 type UI interface {
@@ -29,8 +30,11 @@ type State struct {
 func (*ui) Render(g *gocui.Gui, state *State) error {
 	roomBarWidth := 30
 	inputHeight := 2
+	statusHeight := 2
 	maxX, yMax := g.Size()
-	if v, err := g.SetView("chat", roomBarWidth, 0, maxX, yMax); err != nil && err != gocui.ErrUnknownView {
+
+	chatY2 := yMax - inputHeight - statusHeight
+	if v, err := g.SetView("chat", roomBarWidth, 0, maxX, chatY2); err != nil && err != gocui.ErrUnknownView {
 		return err
 	} else {
 		v.Wrap = true
@@ -52,6 +56,20 @@ func (*ui) Render(g *gocui.Gui, state *State) error {
 			return err
 		}
 	}
+
+	// status needs to be drawn after the initial render so it can detect how
+	// full the chat view is
+	g.Update(func(g *gocui.Gui) error {
+		statusY1 := yMax - inputHeight - statusHeight
+		statusY2 := statusY1 + statusHeight
+		rlog.Info(statusY1, statusY2)
+		if v, err := g.SetView("status", roomBarWidth, statusY1, maxX, statusY2); err != nil && err != gocui.ErrUnknownView {
+			return err
+		} else {
+			drawStatus(g, v)
+		}
+		return nil
+	})
 
 	return nil
 }
@@ -80,6 +98,27 @@ func drawMessages(v *gocui.View, messages []Message) {
 	}
 }
 
+func drawStatus(g *gocui.Gui, v *gocui.View) {
+	v.Clear()
+
+	chatView, err := g.View("chat")
+	if err != nil {
+		rlog.Errorf("Failed to draw status: %v")
+		return
+	}
+
+	_, y := chatView.Origin()
+	_, h := chatView.Size()
+	y = y + h
+	rlog.Infof("buffer: %s", chatView.ViewBuffer())
+	yMax := strings.Count(chatView.ViewBuffer(), "\n")
+	if yMax > 0 {
+		fmt.Fprintf(v, "%d/%d (%d%%)", y, yMax, (y*100)/yMax)
+	} else {
+		fmt.Fprint(v, "0/0 (0%)")
+	}
+}
+
 func (*ui) Scroll(g *gocui.Gui, mult float64) error {
 	v, err := g.View("chat")
 	if err != nil {
@@ -90,12 +129,16 @@ func (*ui) Scroll(g *gocui.Gui, mult float64) error {
 	dy := int(float64(h) * mult)
 	x, y := v.Origin()
 	yNew := y + dy
-	yMax := strings.Count(v.ViewBuffer(), "\n") - h + 1
+	yMax := strings.Count(v.ViewBuffer(), "\n") - h
+	if yMax < 0 {
+		yMax = 0
+	}
 	if yNew < 0 {
 		yNew = 0
 	} else if yNew > yMax {
 		yNew = yMax
 	}
+	rlog.Debugf("Scrolling from %d to %d", y, yNew)
 	return v.SetOrigin(x, yNew)
 }
 

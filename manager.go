@@ -203,11 +203,6 @@ func (m *manager) handleAcknowledge(g *gocui.Gui, roomID, personID string) error
 }
 
 func (m *manager) handleMessage(g *gocui.Gui, roomID, msgID string) error {
-	msg, err := m.spark.Messages.Get(msgID)
-	if err != nil {
-		return err
-	}
-
 	room := m.rooms.ByID(roomID)
 	if room == nil {
 		// TODO: try to load new room
