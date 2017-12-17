@@ -30,6 +30,11 @@ func (m *MessageService) List(id string) ([]spark.Message, error) {
 	return args.Get(0).([]spark.Message), args.Error(1)
 }
 
+func (m *MessageService) Get(id string) (spark.Message, error) {
+	args := m.Called(id)
+	return args.Get(0).(spark.Message), args.Error(1)
+}
+
 func (m *MessageService) Post(msg spark.Message) (spark.Message, error) {
 	args := m.Called(msg)
 	return args.Get(0).(spark.Message), args.Error(1)
