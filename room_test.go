@@ -22,12 +22,12 @@ func (suite *RoomTestSuite) TestTitle() {
 	suite.Equal(r.Title(), "My Awesome Room")
 }
 
-func t(s string) time.Time {
+func t(s string) *time.Time {
 	ret, err := time.Parse(time.RFC3339Nano, s)
 	if err != nil {
 		panic(err)
 	}
-	return ret
+	return &ret
 }
 
 func (suite *RoomTestSuite) TestLoad() {
@@ -60,11 +60,11 @@ func (suite *RoomTestSuite) TestLoad() {
 	suite.Nil(err)
 
 	expected := []Message{
-		{Sender: "person2", Text: "bar", Time: t("2016-01-01T01:01:01.000Z")},
-		{Sender: "person2", Text: "baz", Time: t("2017-01-01T01:01:01.000Z")},
-		{Sender: "person1", Text: "biz", Time: t("2017-02-01T01:01:01.000Z")},
-		{Sender: "person3", Text: "buz", Time: t("2017-02-02T01:01:01.000Z")},
-		{Sender: "person1", Text: "foo", Time: t("2017-02-02T02:01:01.000Z")},
+		{Sender: "person2", Text: "bar", Time: *t("2016-01-01T01:01:01.000Z")},
+		{Sender: "person2", Text: "baz", Time: *t("2017-01-01T01:01:01.000Z")},
+		{Sender: "person1", Text: "biz", Time: *t("2017-02-01T01:01:01.000Z")},
+		{Sender: "person3", Text: "buz", Time: *t("2017-02-02T01:01:01.000Z")},
+		{Sender: "person1", Text: "foo", Time: *t("2017-02-02T02:01:01.000Z")},
 	}
 
 	actual := room.Messages()
@@ -106,7 +106,7 @@ func (suite *RoomTestSuite) TestSend() {
 	expected := []Message{{
 		Sender: "person1",
 		Text:   "tally-ho!",
-		Time:   t("2016-01-01T01:01:01.000Z"),
+		Time:   *t("2016-01-01T01:01:01.000Z"),
 	}}
 
 	actual := room.Messages()
