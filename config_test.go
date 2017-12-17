@@ -26,17 +26,16 @@ func (suite *ConfigTestSuite) TestLoadConfig() {
 	`, "\t", "    ", -1))
 	suite.Nil(err)
 
-	expected := &Config{
-		SparkURL:       "http://example.com",
-		SparkDeviceURL: "http://example.com/devices",
-	}
+	expected := defaultConfig()
+	expected.SparkURL = "http://example.com"
+	expected.SparkDeviceURL = "http://example.com/devices"
 	actual, err := LoadConfig(tmpfile.Name())
 	suite.Nil(err)
 	suite.Equal(expected, actual)
 }
 
 func (suite *ConfigTestSuite) TestLoadConfigDefault() {
-	expected := &Config{}
+	expected := defaultConfig()
 	actual, err := LoadConfig("nonexistantpath")
 	suite.Nil(err)
 	suite.Equal(expected, actual)

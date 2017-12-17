@@ -14,8 +14,8 @@ type Config struct {
 	Keys           map[string]string
 }
 
-func LoadConfig(path string) (*Config, error) {
-	conf := Config{
+func defaultConfig() *Config {
+	return &Config{
 		Keys: map[string]string{
 			"<c-c>":   "quit",
 			"<c-j>":   "nextroom",
@@ -25,15 +25,18 @@ func LoadConfig(path string) (*Config, error) {
 			"<enter>": "send",
 		},
 	}
+}
 
+func LoadConfig(path string) (*Config, error) {
+	conf := defaultConfig()
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &conf, nil
+			return conf, nil
 		}
 		return nil, err
 	}
 
 	err = yaml.Unmarshal(bytes, &conf)
-	return &conf, err
+	return conf, err
 }
