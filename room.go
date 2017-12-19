@@ -62,10 +62,18 @@ func (r *room) Load() error {
 			return err
 		}
 
+		txt := msg.Markdown
+		md := true
+		if txt == "" {
+			txt = msg.Text
+			md = false
+		}
+
 		r.messages[i] = Message{
-			Text:   msg.Text,
-			Sender: sender,
-			Time:   *msg.Created,
+			Text:     txt,
+			Markdown: md,
+			Sender:   sender,
+			Time:     *msg.Created,
 		}
 	}
 
