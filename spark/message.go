@@ -19,6 +19,7 @@ type Message struct {
 	ToPersonEmail   string     `json:"toPersonEmail,omitempty"`
 	Text            string     `json:"text,omitempty"`
 	Markdown        string     `json:"markdown,omitempty"`
+	HTML            string     `json:"html,omitempty"`
 	Files           []string   `json:"files,omitempty"`
 	PersonID        string     `json:"personId,omitempty"`
 	PersonEmail     string     `json:"personEmail,omitempty"`

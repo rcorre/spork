@@ -94,7 +94,11 @@ func drawMessages(v *gocui.View, messages []Message) {
 			sender := ansi.Color(m.Sender, "white+b")
 			fmt.Fprintf(v, "\n--- %s (%s)  ---\n", sender, m.Time)
 		}
-		fmt.Fprintln(v, m.Text)
+		if m.HTML != "" {
+			fmt.Fprintln(v, HTMLtoText(m.HTML))
+		} else {
+			fmt.Fprintln(v, m.Text)
+		}
 	}
 }
 
@@ -110,7 +114,6 @@ func drawStatus(g *gocui.Gui, v *gocui.View) {
 	_, y := chatView.Origin()
 	_, h := chatView.Size()
 	y = y + h
-	rlog.Infof("buffer: %s", chatView.ViewBuffer())
 	yMax := strings.Count(chatView.ViewBuffer(), "\n")
 	if yMax > 0 {
 		fmt.Fprintf(v, "%d/%d (%d%%)", y, yMax, (y*100)/yMax)

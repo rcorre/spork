@@ -1,5 +1,5 @@
-hash: 91b2bd3786f6366c84d067b1ed86994a4023eb639ad349985c4fd46c019b8695
-updated: 2018-01-08T17:21:37.581374361-05:00
+hash: b961319d07eebedfa5a08af9f103400b53c6c18b9caf55cffcd9f2f428114610
+updated: 2018-01-08T17:28:15.793201031-05:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
@@ -38,6 +38,10 @@ imports:
   - mock
   - require
   - suite
+- name: golang.org/x/net
+  version: 434ec0c7fe3742c984919a691b2018a6e9694425
+  subpackages:
+  - html
 - name: golang.org/x/sys
   version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:

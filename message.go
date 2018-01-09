@@ -6,10 +6,10 @@ import (
 )
 
 type Message struct {
-	Text     string
-	Markdown bool
-	Sender   string
-	Time     time.Time
+	Text   string
+	HTML   string
+	Sender string
+	Time   time.Time
 }
 
 // MessageList implements sort.Interface to sort messages by time
