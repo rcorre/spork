@@ -15,10 +15,12 @@ type UI interface {
 	Input(g *gocui.Gui) (string, error)
 }
 
-type ui struct{}
+type ui struct {
+	conf *Config
+}
 
-func NewUI() UI {
-	return &ui{}
+func NewUI(conf *Config) UI {
+	return &ui{conf: conf}
 }
 
 type State struct {
@@ -27,7 +29,7 @@ type State struct {
 	ActiveRoom Room
 }
 
-func (*ui) Render(g *gocui.Gui, state *State) error {
+func (u *ui) Render(g *gocui.Gui, state *State) error {
 	roomBarWidth := 30
 	inputHeight := 2
 	statusHeight := 2
@@ -38,7 +40,7 @@ func (*ui) Render(g *gocui.Gui, state *State) error {
 		return err
 	} else {
 		v.Wrap = true
-		drawMessages(v, state.Messages)
+		drawMessages(v, state.Messages, u.conf)
 	}
 
 	if v, err := g.SetView("rooms", 0, 0, roomBarWidth, yMax); err != nil && err != gocui.ErrUnknownView {
@@ -85,7 +87,7 @@ func drawRooms(v *gocui.View, rooms []Room, active Room) {
 	}
 }
 
-func drawMessages(v *gocui.View, messages []Message) {
+func drawMessages(v *gocui.View, messages []Message, conf *Config) {
 	v.Clear()
 	var curSender string
 	for _, m := range messages {
@@ -95,7 +97,7 @@ func drawMessages(v *gocui.View, messages []Message) {
 			fmt.Fprintf(v, "\n--- %s (%s)  ---\n", sender, m.Time)
 		}
 		if m.HTML != "" {
-			fmt.Fprintln(v, HTMLtoText(m.HTML))
+			fmt.Fprintln(v, HTMLtoText(m.HTML, conf))
 		} else {
 			fmt.Fprintln(v, m.Text)
 		}

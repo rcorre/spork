@@ -30,7 +30,7 @@ func main() {
 	}
 
 	s := spark.New(conf.SparkURL, conf.SparkDeviceURL, token)
-	manager, err := NewManager(s, NewUI())
+	manager, err := NewManager(s, NewUI(conf))
 	if err != nil {
 		log.Panicln(err)
 	}

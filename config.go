@@ -12,8 +12,16 @@ type Config struct {
 	SparkURL       string
 	SparkDeviceURL string
 	Keys           map[string]string
+	MessageFormat  messageFormat
+}
 
-	MessageFormat map[string]string
+type messageFormat struct {
+	emph    string
+	strong  string
+	code    string
+	quote   string
+	link    string
+	mention string
 }
 
 func defaultConfig() *Config {
@@ -26,12 +34,13 @@ func defaultConfig() *Config {
 			"<c-d>":   "halfpagedown",
 			"<enter>": "send",
 		},
-		MessageFormat: map[string]string{
-			"emph":   "white+h",
-			"strong": "white+b",
-			"code":   "white:gray",
-			"quote":  "gray",
-			"link":   "blue",
+		MessageFormat: messageFormat{
+			emph:    "white+h",
+			strong:  "white+b",
+			code:    "white:gray",
+			quote:   "gray",
+			link:    "blue",
+			mention: "blue+b",
 		},
 	}
 }
