@@ -1,4 +1,4 @@
-package spark
+package main
 
 import (
 	"encoding/json"
@@ -20,7 +20,7 @@ type connection interface {
 	Close() error
 }
 
-// Cisco Spark has a websocket interface to listen for message events
+// EventListener interfaces with Cisco Spark websockets
 // It isn't documented, I found it here:
 // https://github.com/marchfederico/ciscospark-websocket-events
 type EventListener interface {

@@ -26,6 +26,8 @@ type messageFormat struct {
 
 func defaultConfig() *Config {
 	return &Config{
+		SparkURL:       "https://api.ciscospark.com/v1/",
+		SparkDeviceURL: "https://wdm-a.wbx2.com/wdm/api/v1/devices",
 		Keys: map[string]string{
 			"<c-c>":   "quit",
 			"<c-j>":   "nextroom",

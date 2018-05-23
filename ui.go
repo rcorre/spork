@@ -10,7 +10,7 @@ import (
 )
 
 type UI interface {
-	Render(g *gocui.Gui, state *State) error
+	Render(g *gocui.Gui, core *Core) error
 	Scroll(g *gocui.Gui, mult float64) error
 	Input(g *gocui.Gui) (string, error)
 }
@@ -23,13 +23,7 @@ func NewUI(conf *Config) UI {
 	return &ui{conf: conf}
 }
 
-type State struct {
-	Messages   []Message
-	Rooms      []Room
-	ActiveRoom Room
-}
-
-func (u *ui) Render(g *gocui.Gui, state *State) error {
+func (u *ui) Render(g *gocui.Gui, core *Core) error {
 	roomBarWidth := 30
 	inputHeight := 2
 	statusHeight := 2
@@ -40,13 +34,14 @@ func (u *ui) Render(g *gocui.Gui, state *State) error {
 		return err
 	} else {
 		v.Wrap = true
-		drawMessages(v, state.Messages, u.conf)
+		messages := core.Messages[core.ActiveRoom.ID]
+		drawMessages(v, messages, core.People, u.conf)
 	}
 
 	if v, err := g.SetView("rooms", 0, 0, roomBarWidth, yMax); err != nil && err != gocui.ErrUnknownView {
 		return err
 	} else {
-		drawRooms(v, state.Rooms, state.ActiveRoom)
+		drawRooms(v, core.Rooms, core.ActiveRoom)
 	}
 
 	if v, err := g.SetView("input", roomBarWidth, yMax-inputHeight, maxX, yMax); err != nil && err != gocui.ErrUnknownView {
@@ -76,25 +71,29 @@ func (u *ui) Render(g *gocui.Gui, state *State) error {
 	return nil
 }
 
-func drawRooms(v *gocui.View, rooms []Room, active Room) {
+func drawRooms(v *gocui.View, rooms []*Room, active *Room) {
 	v.Clear()
 	for _, r := range rooms {
-		title := r.Title()
+		title := r.Title
 		if r == active {
-			title = ansi.Color(r.Title(), "white+b")
+			title = ansi.Color(r.Title, "white+b")
 		}
 		fmt.Fprintf(v, "%s\n", title)
 	}
 }
 
-func drawMessages(v *gocui.View, messages []Message, conf *Config) {
+func drawMessages(v *gocui.View, messages []*Message, people map[string]*Person, conf *Config) {
 	v.Clear()
 	var curSender string
 	for _, m := range messages {
-		if m.Sender != curSender {
-			curSender = m.Sender
-			sender := ansi.Color(m.Sender, "white+b")
-			fmt.Fprintf(v, "\n--- %s (%s)  ---\n", sender, m.Time)
+		sender := "Unknown"
+		if p, ok := people[m.PersonID]; ok {
+			sender = p.DisplayName
+		}
+		if sender != curSender {
+			curSender = sender
+			sender := ansi.Color(sender, "white+b")
+			fmt.Fprintf(v, "\n--- %s (%s)  ---\n", sender, m.Created)
 		}
 		if m.HTML != "" {
 			fmt.Fprintln(v, HTMLtoText(m.HTML, conf))

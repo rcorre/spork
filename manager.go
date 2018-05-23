@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/jroimartin/gocui"
-	"github.com/rcorre/spork/spark"
 	"github.com/romana/rlog"
 )
 
@@ -15,7 +14,7 @@ type Manager interface {
 	gocui.Manager
 
 	BindKeys(g *gocui.Gui, keys map[string]string) error
-	Handle(g *gocui.Gui, ev *spark.Event) error
+	Handle(g *gocui.Gui, ev *Event) error
 
 	// bindable commands
 	NextRoom(g *gocui.Gui, _ *gocui.View) error
@@ -29,37 +28,18 @@ type Manager interface {
 }
 
 type manager struct {
-	spark      *spark.Client
-	view       UI
-	activeRoom Room
-	rooms      RoomList
-	people     PersonCache
+	spark Spark
+	view  UI
+	core  *Core
+	room  *Room
 }
 
-func NewManager(s *spark.Client, v UI) (Manager, error) {
-	roomList, err := s.Rooms.List()
-	if err != nil {
-		return nil, err
-	}
-
-	people, err := NewPersonCache(s.People)
-	if err != nil {
-		return nil, err
-	}
-
-	rooms := make(RoomList, len(roomList))
-	for i, r := range roomList {
-		rooms[i] = NewRoom(&r, s.Messages, people)
-	}
-	rooms.Sort()
-
+func NewManager(c *Core, v UI) Manager {
 	return &manager{
-		spark:      s,
-		view:       v,
-		rooms:      rooms,
-		activeRoom: rooms[0],
-		people:     people,
-	}, nil
+		core: c,
+		view: v,
+		room: nil,
+	}
 }
 
 func (m *manager) BindKeys(g *gocui.Gui, keys map[string]string) error {
@@ -173,7 +153,7 @@ func (m *manager) BindKeys(g *gocui.Gui, keys map[string]string) error {
 	return nil
 }
 
-func (m *manager) Handle(g *gocui.Gui, ev *spark.Event) error {
+func (m *manager) Handle(g *gocui.Gui, ev *Event) error {
 	rlog.Debugf("Processing spark event: %+v", ev)
 	switch ev.Data.EventType {
 	case "conversation.activity":
@@ -203,14 +183,14 @@ func (m *manager) handleAcknowledge(g *gocui.Gui, roomID, personID string) error
 }
 
 func (m *manager) handleMessage(g *gocui.Gui, roomID, msgID string) error {
-	room := m.rooms.ByID(roomID)
+	room := m.core.Room(roomID)
 	if room == nil {
 		// TODO: try to load new room
 		rlog.Warn("Could not find room %q for incoming message", roomID)
 		return nil
 	}
 
-	return room.Load()
+	return m.core.LoadMessages(roomID)
 }
 
 func (m *manager) handleStartTyping(g *gocui.Gui, roomID, personID string) error {
@@ -221,59 +201,29 @@ func (m *manager) handleStopTyping(g *gocui.Gui, roomID, personID string) error 
 	return nil
 }
 
-func (m *manager) updateRoom(g *gocui.Gui, r Room) {
+func (m *manager) updateRoom(g *gocui.Gui, r *Room) {
 	g.Update(func(g *gocui.Gui) error {
-		if err := r.Load(); err != nil {
+		if err := m.core.LoadMessages(r.ID); err != nil {
 			return err
 		}
 
-		m.rooms.Sort()
-
-		if m.activeRoom == r {
-			return m.view.Render(g, m.state())
+		if m.core.ActiveRoom == r {
+			return m.view.Render(g, m.core)
 		}
 		return nil
 	})
 }
 
-func (m *manager) state() *State {
-	return &State{
-		Messages:   m.activeRoom.Messages(),
-		Rooms:      m.rooms,
-		ActiveRoom: m.activeRoom,
-	}
-}
-
 func (m *manager) NextRoom(g *gocui.Gui, _ *gocui.View) error {
-	room, err := m.cycleRoom(g, 1)
-	if err != nil {
-		return err
-	}
+	room := m.core.CycleRoom(1)
 	m.updateRoom(g, room)
-	return nil
+	return m.view.Render(g, m.core)
 }
 
 func (m *manager) PrevRoom(g *gocui.Gui, _ *gocui.View) error {
-	room, err := m.cycleRoom(g, -1)
-	if err != nil {
-		return err
-	}
+	room := m.core.CycleRoom(-1)
 	m.updateRoom(g, room)
-	return nil
-}
-
-func (m *manager) cycleRoom(g *gocui.Gui, direction int) (Room, error) {
-	curIdx := 0
-	for i, r := range m.rooms {
-		if r == m.activeRoom {
-			curIdx = i
-			break
-		}
-	}
-	idx := (curIdx + direction) % len(m.rooms)
-	m.activeRoom = m.rooms[idx]
-	err := m.view.Render(g, m.state())
-	return m.activeRoom, err
+	return m.view.Render(g, m.core)
 }
 
 func (m *manager) PageUp(g *gocui.Gui, _ *gocui.View) error {
@@ -298,16 +248,17 @@ func (m *manager) Send(g *gocui.Gui, _ *gocui.View) error {
 		return err
 	}
 
-	if err := m.activeRoom.Send(text); err != nil {
+	id := m.core.ActiveRoom.ID
+	if err := m.core.Send(text, id); err != nil {
 		return err
 	}
 
-	m.updateRoom(g, m.activeRoom)
+	m.updateRoom(g, m.core.ActiveRoom)
 	return nil
 }
 
 func (m *manager) Layout(g *gocui.Gui) error {
-	return m.view.Render(g, m.state())
+	return m.view.Render(g, m.core)
 }
 
 func (m *manager) Quit(g *gocui.Gui, v *gocui.View) error {

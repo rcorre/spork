@@ -1,4 +1,4 @@
-package spark
+package main
 
 import (
 	"bytes"

@@ -3,10 +3,8 @@ package main
 import (
 	"log"
 	"os"
-	"os/signal"
 
 	"github.com/jroimartin/gocui"
-	"github.com/rcorre/spork/spark"
 	"github.com/romana/rlog"
 )
 
@@ -29,11 +27,14 @@ func main() {
 		log.Panicln("SPARK_TOKEN must be set")
 	}
 
-	s := spark.New(conf.SparkURL, conf.SparkDeviceURL, token)
-	manager, err := NewManager(s, NewUI(conf))
-	if err != nil {
+	spark := NewSpark(conf.SparkURL, token)
+	core := NewCore(spark)
+	if err := core.LoadRooms(); err != nil {
 		log.Panicln(err)
 	}
+
+	ui := NewUI(conf)
+	manager := NewManager(core, ui)
 
 	g.SetManager(manager)
 
@@ -46,33 +47,33 @@ func main() {
 	}
 }
 
-func listen(s spark.Client, m Manager, conf *Config) {
-	if err := s.Events.Register(); err != nil {
-		panic(err)
-	}
-	defer func() {
-		if err := s.Events.UnRegister(); err != nil {
-			rlog.Errorf("Failed to unregister websocket: %v", err)
-		} else {
-			rlog.Info("Device unregistered")
-		}
-	}()
-	msgChan, errChan, err := s.Events.Listen()
-	if err != nil {
-		panic(err)
-	}
-
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
-
-	for {
-		select {
-		case msg := <-msgChan:
-			rlog.Infof("msg: %s", msg)
-		case err := <-errChan:
-			rlog.Errorf("err: %v", err)
-		case <-interrupt:
-			return
-		}
-	}
-}
+//func listen(s Spark, m Manager, conf *Config) {
+//	if err := s.Events.Register(); err != nil {
+//		panic(err)
+//	}
+//	defer func() {
+//		if err := s.Events.UnRegister(); err != nil {
+//			rlog.Errorf("Failed to unregister websocket: %v", err)
+//		} else {
+//			rlog.Info("Device unregistered")
+//		}
+//	}()
+//	msgChan, errChan, err := s.Events.Listen()
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	interrupt := make(chan os.Signal, 1)
+//	signal.Notify(interrupt, os.Interrupt)
+//
+//	for {
+//		select {
+//		case msg := <-msgChan:
+//			rlog.Infof("msg: %s", msg)
+//		case err := <-errChan:
+//			rlog.Errorf("err: %v", err)
+//		case <-interrupt:
+//			return
+//		}
+//	}
+//}
