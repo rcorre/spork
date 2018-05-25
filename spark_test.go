@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,6 +20,7 @@ func TestSparkTestSuite(t *testing.T) {
 
 func (suite *SparkTestSuite) TestRooms() {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		suite.Equal("GET", r.Method)
 		suite.Equal("/rooms", r.URL.Path)
 		suite.Equal("Bearer fake-token", r.Header.Get("Authorization"))
 		w.Write([]byte(`{
@@ -32,118 +35,112 @@ func (suite *SparkTestSuite) TestRooms() {
 
 	rooms, err := spark.Rooms()
 	suite.Nil(err)
-	suite.Equal(rooms, []*Room{
+	expected := []*Room{
 		{Title: "Foo"},
 		{Title: "Bar"},
 		{Title: "Baz"},
-	})
+	}
+	suite.Equal(expected, rooms)
 }
 
-//func (suite *SparkTestSuite) TestPeople() {
-//	restClient := &RESTClientMock{}
-//	restClient.On(
-//		"Get",
-//		"people",
-//		map[string]string{
-//			"id": "one,two,three",
-//		},
-//		&struct{ Items []Person }{},
-//	).Run(func(args mock.Arguments) {
-//		out := args.Get(2).(*struct{ Items []Person })
-//		out.Items = []Person{
-//			{DisplayName: "Foo"},
-//			{DisplayName: "Bar"},
-//			{DisplayName: "Baz"},
-//		}
-//	}).Return(nil)
-//	peopleService := NewPeopleService(restClient)
-//
-//	rooms, err := peopleService.List([]string{"one", "two", "three"})
-//	suite.Nil(err)
-//	suite.Equal(rooms, []Person{
-//		{DisplayName: "Foo"},
-//		{DisplayName: "Bar"},
-//		{DisplayName: "Baz"},
-//	})
-//
-//	restClient.AssertExpectations(suite.T())
-//}
-//
-//func (suite *SparkTestSuite) TestMe() {
-//	restClient := &RESTClientMock{}
-//	restClient.On(
-//		"Get",
-//		"people/me",
-//		map[string]string(nil),
-//		mock.Anything,
-//	).Run(func(args mock.Arguments) {
-//		out := args.Get(2).(*Person)
-//		*out = Person{
-//			ID:          "mee-123",
-//			DisplayName: "Ryan",
-//		}
-//	}).Return(nil)
-//	peopleService := NewPeopleService(restClient)
-//
-//	me, err := peopleService.Me()
-//	suite.Nil(err)
-//	suite.Equal(me.ID, "mee-123")
-//	suite.Equal(me.DisplayName, "Ryan")
-//
-//	restClient.AssertExpectations(suite.T())
-//}
-//
-//func (suite *SparkTestSuite) TestMessages() {
-//	restClient := &RESTClientMock{}
-//	restClient.On(
-//		"Get",
-//		"messages",
-//		map[string]string{"roomId": "room-12345"},
-//		&struct{ Items []Message }{},
-//	).Run(func(args mock.Arguments) {
-//		out := args.Get(2).(*struct{ Items []Message })
-//		out.Items = []Message{
-//			{Text: "Foo"},
-//			{Text: "Bar"},
-//			{Text: "Baz"},
-//		}
-//	}).Return(nil)
-//	s := NewSpark("", "")
-//
-//	rooms, err := roomService.List("room-12345")
-//	suite.Nil(err)
-//	suite.Equal(rooms, []Message{
-//		{Text: "Foo"},
-//		{Text: "Bar"},
-//		{Text: "Baz"},
-//	})
-//}
-//
-//func (suite *SparkTestSuite) TestSend() {
-//	restClient := &RESTClientMock{}
-//	restClient.On(
-//		"Post",
-//		"messages",
-//		&Message{RoomID: "abc-123", Text: "foobar"},
-//		&Message{},
-//	).Run(func(args mock.Arguments) {
-//		out := args.Get(2).(*Message)
-//		*out = Message{
-//			ID:     "xyz-345",
-//			RoomID: "abc-123",
-//			Text:   "foobar",
-//		}
-//	}).Return(nil)
-//	roomService := NewMessageService(restClient)
-//
-//	out, err := roomService.Post(Message{
-//		RoomID: "abc-123",
-//		Text:   "foobar",
-//	})
-//	suite.Nil(err)
-//	suite.Equal(out, Message{
-//		ID:     "xyz-345",
-//		RoomID: "abc-123",
-//		Text:   "foobar",
-//	})
-//}
+func (suite *SparkTestSuite) TestPeople() {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		suite.Equal("GET", r.Method)
+		suite.Equal("/people", r.URL.Path)
+		suite.Equal("Bearer fake-token", r.Header.Get("Authorization"))
+		suite.Equal(r.URL.Query().Get("id"), "one,two,three")
+		w.Write([]byte(`{
+			"items": [
+				{"displayName": "Foo"},
+				{"displayName": "Bar"},
+				{"displayName": "Baz"}
+			]
+		}`))
+	}))
+	spark := NewSpark(srv.URL, "fake-token")
+
+	actual, err := spark.People([]string{"one", "two", "three"})
+	suite.Nil(err)
+	suite.Equal([]*Person{
+		{DisplayName: "Foo"},
+		{DisplayName: "Bar"},
+		{DisplayName: "Baz"},
+	}, actual)
+}
+
+func (suite *SparkTestSuite) TestMe() {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		suite.Equal("GET", r.Method)
+		suite.Equal("/people/me", r.URL.Path)
+		suite.Equal("Bearer fake-token", r.Header.Get("Authorization"))
+		w.Write([]byte(`{
+			"id": "mee-123",
+			"displayName": "Ryan"
+		}`))
+	}))
+	spark := NewSpark(srv.URL, "fake-token")
+
+	actual, err := spark.Me()
+	suite.Nil(err)
+	suite.Equal(&Person{
+		ID:          "mee-123",
+		DisplayName: "Ryan",
+	}, actual)
+}
+
+func (suite *SparkTestSuite) TestMessages() {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		suite.Equal("GET", r.Method)
+		suite.Equal("/messages", r.URL.Path)
+		suite.Equal("room-12345", r.URL.Query().Get("roomId"))
+		suite.Equal("Bearer fake-token", r.Header.Get("Authorization"))
+		w.Write([]byte(`{
+			"items": [
+				{"text": "Foo"},
+				{"text": "Bar"},
+				{"text": "Baz"}
+			]
+		}`))
+	}))
+	spark := NewSpark(srv.URL, "fake-token")
+
+	actual, err := spark.Messages("room-12345")
+	suite.Nil(err)
+	suite.Equal([]*Message{
+		{Text: "Foo"},
+		{Text: "Bar"},
+		{Text: "Baz"},
+	}, actual)
+}
+
+func (suite *SparkTestSuite) TestSend() {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		suite.Equal("POST", r.Method)
+		suite.Equal("/messages", r.URL.Path)
+		suite.Equal("Bearer fake-token", r.Header.Get("Authorization"))
+
+		defer r.Body.Close()
+		b, _ := ioutil.ReadAll(r.Body)
+		var msg Message
+		suite.NoError(json.Unmarshal(b, &msg))
+		suite.Equal(Message{RoomID: "abc-123", Text: "foobar"}, msg)
+
+		w.Write([]byte(`{
+			"id": "xyz-345",
+			"roomID": "abc-123",
+			"text": "foobar"
+		}`))
+	}))
+	spark := NewSpark(srv.URL, "fake-token")
+
+	actual, err := spark.Send(&Message{
+		RoomID: "abc-123",
+		Text:   "foobar",
+	})
+	suite.Nil(err)
+	suite.Equal(&Message{
+		ID:     "xyz-345",
+		RoomID: "abc-123",
+		Text:   "foobar",
+	}, actual)
+}

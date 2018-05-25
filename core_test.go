@@ -27,6 +27,11 @@ func (m *SparkMock) People(ids []string) ([]*Person, error) {
 	return args.Get(0).([]*Person), args.Error(1)
 }
 
+func (m *SparkMock) Me() (*Person, error) {
+	args := m.Called()
+	return args.Get(0).(*Person), args.Error(1)
+}
+
 func (m *SparkMock) Messages(roomID string) ([]*Message, error) {
 	args := m.Called(roomID)
 	return args.Get(0).([]*Message), args.Error(1)
