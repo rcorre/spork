@@ -10,6 +10,7 @@ import (
 type Spark interface {
 	Rooms() ([]*Room, error)
 	People(ids []string) ([]*Person, error)
+	Me() (*Person, error)
 	Messages(roomId string) ([]*Message, error)
 	Send(msg *Message) (*Message, error)
 }
@@ -86,6 +87,26 @@ func (s *spark) Rooms() ([]*Room, error) {
 	return list.Items, err
 }
 
+// People looks up people by ID
+// ids are the IDs of people to list
+func (s *spark) People(ids []string) ([]*Person, error) {
+	var list struct {
+		Items []*Person
+	}
+	params := map[string]string{
+		"id": strings.Join(ids, ","),
+	}
+	err := s.rest.Get("people", params, &list)
+	return list.Items, err
+}
+
+// Me returns the Person representing the current user
+func (s *spark) Me() (*Person, error) {
+	var me Person
+	err := s.rest.Get("people/me", nil, &me)
+	return &me, err
+}
+
 // List lists messages from a room
 // roomID is the id of the room to list messages from
 func (s *spark) Messages(roomID string) ([]*Message, error) {
@@ -105,24 +126,4 @@ func (s *spark) Send(msg *Message) (*Message, error) {
 	var out Message
 	err := s.rest.Post("messages", &msg, &out)
 	return &out, err
-}
-
-// People looks up people by ID
-// ids are the IDs of people to list
-func (s *spark) People(ids []string) ([]*Person, error) {
-	var list struct {
-		Items []*Person
-	}
-	params := map[string]string{
-		"id": strings.Join(ids, ","),
-	}
-	err := s.rest.Get("people", params, &list)
-	return list.Items, err
-}
-
-// Me returns the Person representing the current user
-func (s *spark) Me() (*Person, error) {
-	var me Person
-	err := s.rest.Get("people/me", nil, &me)
-	return &me, err
 }
